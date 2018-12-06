@@ -41,11 +41,16 @@ load("@build_bazel_rules_nodejs//:defs.bzl", "nodejs_binary")
 # package. The generated @npm//@angular/bazel/ngc-wrapped target
 # does not work because it does not have the node `--expose-gc` flag
 # set which is required to support the call to `global.gc()`.
-nodejs_binary(
+#nodejs_binary(
+#    name = "@angular/bazel/ngc-wrapped",
+#    configuration_env_vars = ["compile"],
+#    data = ["@npm//@angular/bazel"],
+#    entry_point = "@angular/bazel/src/ngc-wrapped/index.js",
+#    install_source_map_support = False,
+#    templated_args = ["--node_options=--expose-gc"],
+#)
+
+alias(
     name = "@angular/bazel/ngc-wrapped",
-    configuration_env_vars = ["compile"],
-    data = ["@npm//@angular/bazel"],
-    entry_point = "@angular/bazel/src/ngc-wrapped/index.js",
-    install_source_map_support = False,
-    templated_args = ["--node_options=--expose-gc"],
+    actual = "//packages/bazel/src/ngc-wrapped"
 )

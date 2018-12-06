@@ -32,7 +32,7 @@ load("@build_bazel_rules_nodejs//internal/common:node_module_info.bzl", "NodeMod
 load("//packages/bazel/src:esm5.bzl", "esm5_outputs_aspect", "esm5_root_dir", "flatten_esm5")
 load("//packages/bazel/src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
 
-_DEFAULT_NG_PACKAGER = "@npm//@angular/bazel/bin:packager"
+_DEFAULT_NG_PACKAGER = "//packages/bazel/src/ng_package:packager"
 
 # Convert from some-dash-case to someCamelCase
 def _convert_dash_case_to_camel_case(s):

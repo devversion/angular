@@ -1,0 +1,20 @@
+package(default_visibility = ["//visibility:public"])
+
+load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
+
+build_ngc(
+    name = "flat_module",
+    srcs = glob(["**/*"]),
+    tsconfig = ":tsconfig-build.json",
+    outs = [
+        "index.d.ts",
+        "index.js",
+        "index.metadata.json",
+        "public-api.d.ts",
+        "public-api.js",
+        "src/flat.component.d.ts",
+        "src/flat.component.js",
+        "src/flat.module.d.ts",
+        "src/flat.module.js",
+    ],
+)

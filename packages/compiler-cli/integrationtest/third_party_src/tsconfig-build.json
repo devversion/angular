@@ -14,7 +14,7 @@
     "declaration": true,
     "lib": ["es6", "dom"],
     "baseUrl": ".",
-    "outDir": "../node_modules/third_party",
+    "outDir": "./dist",
      // Prevent scanning up the directory tree for types
     "typeRoots": ["node_modules/@types"]
  }

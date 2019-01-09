@@ -1,0 +1,30 @@
+package(default_visibility = ["//visibility:public"])
+
+load("//tools:defaults.bzl", "nodejs_binary")
+
+filegroup(
+    name = "flat_module_srcs",
+    srcs = glob(["**/*"]),
+)
+
+nodejs_binary(
+    name = "ngc_bin",
+    entry_point = "angular/packages/compiler-cli/src/main.js",
+    data = [
+        "//packages/compiler-cli",
+        "@ngdeps//reflect-metadata",
+        "@ngdeps//chokidar",
+    ],
+)
+
+nodejs_binary(
+    name = "build-ngc",
+    entry_point = "angular/packages/compiler-cli/integrationtest/build-ngc.js",
+    data = [
+        "@ngdeps//rxjs",
+        "@ngdeps//shelljs",
+        "//packages/core:npm_package",
+        ":ngc_bin",
+        ":build-ngc.js"
+    ],
+)

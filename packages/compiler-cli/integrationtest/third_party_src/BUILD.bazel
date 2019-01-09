@@ -1,0 +1,13 @@
+package(default_visibility = ["//visibility:public"])
+
+load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
+
+build_ngc(
+    name = "third_party_src",
+    srcs =  glob(["**/*"]),
+    tsconfig = ":tsconfig-build.json",
+    outs = [
+    "%s.%s" % (file, ext)
+        for file in ["comp", "directive", "module", "other_comp", "other_module"]
+        for ext in ["js", "d.ts", "metadata.json"]]
+)

@@ -117,3 +117,12 @@ sass_repositories()
 load("@io_bazel_skydoc//skylark:skylark.bzl", "skydoc_repositories")
 
 skydoc_repositories()
+
+#
+# Point Bazel to WORKSPACEs that live in subdirectories
+#
+http_archive(
+    name = "angular_material",
+    strip_prefix = "material2-7.2.1",
+    url = "https://github.com/angular/material2/archive/7.2.1.zip",
+)

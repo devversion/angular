@@ -3,16 +3,23 @@ const child_process = require('child_process');
 const fs = require('fs');
 const shx = require('shelljs');
 
-const BUILD_NODE_MODULES = {
-  '@angular/core': path.dirname(require.resolve('angular/packages/core/npm_package/package.json')),
-  'rxjs': path.dirname(require.resolve('ngdeps/node_modules/rxjs/package.json'))
-};
-
-const [outDirectory, tsconfigPath] = process.argv.slice(2);
+const [outputDir, tsconfigPath, ...importMappings] = process.argv.slice(2);
+const execRoot = process.cwd();
 const tempDir = createTmpDir();
 const tsconfigFileName = 'tsconfig-build.json';
 const sourceDir = path.dirname(tsconfigPath);
 const ngcIndexPath = require.resolve('./ngc_bin');
+
+// #################################
+// Compute runtime import packages
+// #################################
+
+const BUILD_NODE_MODULES = importMappings.reduce((result, mapping) => {
+  const [importName, packagePath] = mapping.split(',');
+  result[importName] = path.join(execRoot, packagePath);
+  return result;
+}, {});
+
 
 // #################################
 // Prepare the temporary directory
@@ -38,7 +45,7 @@ child_process.spawnSync(
 // Write output to Bazel out
 // #################################
 
-shx.cp('-r', `${tempDir}/dist/*`, outDirectory);
+shx.cp('-r', `${tempDir}/dist/*`, outputDir);
 shx.rm('-r', tempDir);
 
 /** Creates a temporary directory with an unique name. */

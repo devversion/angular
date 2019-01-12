@@ -23,7 +23,6 @@ nodejs_binary(
     data = [
         "@ngdeps//rxjs",
         "@ngdeps//shelljs",
-        "//packages/core:npm_package",
         ":ngc_bin",
         ":build-ngc.js"
     ],

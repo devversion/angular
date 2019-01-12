@@ -17,4 +17,8 @@ build_ngc(
         "src/flat.module.d.ts",
         "src/flat.module.js",
     ],
+    npm_imports = {
+        "@ngdeps//rxjs": "rxjs",
+        "//packages/core:npm_package": "@angular/core",
+    }
 )

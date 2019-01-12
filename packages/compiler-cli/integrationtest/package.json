@@ -1,8 +1,0 @@
-{
-  "name": "integrationtest",
-  "version": "0.0.0",
-  "dependencies": {
-    "@angular/cdk": "^7.2.1",
-    "@angular/material": "^7.2.1"
-  }
-}

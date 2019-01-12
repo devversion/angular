@@ -35,6 +35,7 @@ ng_package(
     # Dependencies on the full npm_package cause long re-builds.
     visibility = [
         "//packages/compiler-cli/test:__pkg__",
+        "//packages/compiler-cli/integrationtest:__subpackages__",
     ],
     deps = [
         ":platform-browser",

@@ -14,7 +14,9 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    "strictPropertyInitialization": true,
+    // TODO(devversion): This has been enabled while the test was disabled, so the test files
+    // are not compatible yet. This needs to be re-enabled in the future.
+    "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
     "rootDir": "",

@@ -3,18 +3,25 @@ const child_process = require('child_process');
 const fs = require('fs');
 const shx = require('shelljs');
 
-const [outputDir, tsconfigPath, ...importMappings] = process.argv.slice(2);
+const [
+  sourceDir,
+  outputDir,
+  inputTsconfigPath,
+  sourceFilesArg,
+  ...importMappingsArg
+] = process.argv.slice(2);
+
+const sourceFiles = sourceFilesArg.split(',');
 const execRoot = process.cwd();
 const tempDir = createTmpDir();
-const tsconfigFileName = 'tsconfig-build.json';
-const sourceDir = path.dirname(tsconfigPath);
 const ngcIndexPath = require.resolve('./ngc_bin');
+const tsconfigPath = path.join(tempDir, path.relative(sourceDir, inputTsconfigPath));
 
 // #################################
 // Compute runtime import packages
 // #################################
 
-const BUILD_NODE_MODULES = importMappings.reduce((result, mapping) => {
+const importMappings = importMappingsArg.reduce((result, mapping) => {
   const [importName, packagePath] = mapping.split(',');
   result[importName] = path.join(execRoot, packagePath);
   return result;
@@ -25,27 +32,31 @@ const BUILD_NODE_MODULES = importMappings.reduce((result, mapping) => {
 // Prepare the temporary directory
 // #################################
 
-shx.cp('-r', `${sourceDir}/*`, tempDir);
+sourceFiles.forEach(file => {
+  const tempSourcePath = path.join(tempDir, path.relative(sourceDir, file));
+  shx.mkdir('-p', path.dirname(tempSourcePath));
+  shx.cp(file, tempSourcePath);
+});
 
-Object.keys(BUILD_NODE_MODULES).forEach(packageName => {
+Object.keys(importMappings).forEach(packageName => {
   const targetPath = path.join(tempDir, 'node_modules', packageName);
 
   shx.mkdir('-p', path.join(targetPath, '..'));
-  fs.symlinkSync(BUILD_NODE_MODULES[packageName], targetPath, 'dir');
+  fs.symlinkSync(importMappings[packageName], targetPath, 'dir');
 });
 
 // #################################
 // Run NGC and generate output.
 // #################################
 
-child_process.spawnSync(
-  ngcIndexPath, ['-p', path.join(tempDir, tsconfigFileName)], {stdio: 'inherit'});
+child_process.spawnSync(ngcIndexPath, ['-p', tsconfigPath], {stdio: 'inherit'});
 
 // #################################
 // Write output to Bazel out
 // #################################
 
-shx.cp('-r', `${tempDir}/dist/*`, outputDir);
+shx.rm('-r', path.join(tempDir, 'node_modules'));
+shx.cp('-r', `${tempDir}/*`, outputDir);
 shx.rm('-r', tempDir);
 
 /** Creates a temporary directory with an unique name. */

@@ -10,7 +10,4 @@ build_ngc(
         "@ngdeps//rxjs": "rxjs",
         "//packages/core:npm_package": "@angular/core",
     },
-    outs = ["%s.%s" % (file, ext)
-        for file in ["comp", "directive", "module", "other_comp", "other_module"]
-        for ext in ["js", "d.ts", "metadata.json"]]
 )

@@ -3,7 +3,7 @@ load("//tools:defaults.bzl", "jasmine_node_test", "ts_library")
 ts_library(
     name = "test_lib",
     testonly = True,
-    srcs = glob(["**/*.ts"]),
+    srcs = ["init.ts", "forward_ref_spec.ts", "util.ts", "test-output.ts"],
     deps = [
         "//packages/core",
         "//packages/core/testing",
@@ -24,4 +24,10 @@ jasmine_node_test(
         "//packages/private/testing",
         "//tools/testing:node",
     ],
+    data = [
+        "//packages/compiler-cli/integrationtest/src",
+        "//packages/compiler-cli/integrationtest/flat_module",
+        "//packages/compiler-cli/integrationtest/third_party_src",
+        "//packages/forms",
+    ]
 )

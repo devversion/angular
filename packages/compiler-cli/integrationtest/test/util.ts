@@ -9,11 +9,11 @@
 import {NgModuleRef} from '@angular/core';
 import {ComponentFixture} from '@angular/core/testing';
 import {platformServerTesting} from '@angular/platform-server/testing';
+import {srcPackage} from "./test-output";
 
-import {MainModule} from '../src/module';
-import {MainModuleNgFactory} from '../src/module.ngfactory';
+const {MainModuleNgFactory} = require(`${srcPackage}/module.ngfactory`);
 
-let mainModuleRef: NgModuleRef<MainModule> = null !;
+let mainModuleRef: NgModuleRef<any> = null !;
 beforeEach((done) => {
   platformServerTesting().bootstrapModuleFactory(MainModuleNgFactory).then((moduleRef: any) => {
     mainModuleRef = moduleRef;
@@ -21,7 +21,7 @@ beforeEach((done) => {
   });
 });
 
-export function createModule(): NgModuleRef<MainModule> {
+export function createModule(): NgModuleRef<any> {
   return mainModuleRef;
 }
 

@@ -63,6 +63,8 @@ cp -v package.json $TMP
   node test/test_ngtools_api.js
 
   ./node_modules/.bin/jasmine init
+
+
   # Run compiler-cli integration tests in node
   ./node_modules/.bin/webpack ./webpack.config.js
   ./node_modules/.bin/jasmine ./all_spec.js

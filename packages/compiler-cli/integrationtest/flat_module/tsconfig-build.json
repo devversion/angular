@@ -1,8 +1,5 @@
 {
   "angularCompilerOptions": {
-    // For TypeScript 1.8, we have to lay out generated files
-    // in the same source directory with your code.
-    "genDir": "ng",
     "flatModuleId": "flat_module",
     "flatModuleOutFile": "index.js",
     "skipTemplateCodegen": true
@@ -17,7 +14,7 @@
     "declaration": true,
     "lib": ["es6", "dom"],
     "baseUrl": ".",
-    "outDir": ".",
+    "outDir": "./dist",
      // Prevent scanning up the directory tree for types
     "typeRoots": ["node_modules/@types"]
  },

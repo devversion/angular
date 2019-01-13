@@ -10,4 +10,5 @@ build_ngc(
         "@ngdeps//rxjs": "rxjs",
         "//packages/core:npm_package": "@angular/core",
     },
+    module_name = "third_party",
 )

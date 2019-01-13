@@ -41,8 +41,8 @@ sourceFiles.forEach(file => {
 Object.keys(importMappings).forEach(packageName => {
   const targetPath = path.join(tempDir, 'node_modules', packageName);
 
-  shx.mkdir('-p', path.join(targetPath, '..'));
-  fs.symlinkSync(importMappings[packageName], targetPath, 'dir');
+  shx.mkdir('-p', targetPath);
+  shx.cp('-r', `${importMappings[packageName]}/*`, targetPath);
 });
 
 // #################################
@@ -55,8 +55,15 @@ child_process.spawnSync(ngcIndexPath, ['-p', tsconfigPath], {stdio: 'inherit'});
 // Write output to Bazel out
 // #################################
 
-shx.rm('-r', path.join(tempDir, 'node_modules'));
-shx.cp('-r', `${tempDir}/*`, outputDir);
+shx.cp('-r', `${tempDir}/dist/*`, outputDir);
+shx.mkdir('-p', path.join(outputDir, 'node_modules'))
+shx.cp('-r', `${tempDir}/node_modules/*`, path.join(outputDir, 'node_modules'));
+
+sourceFiles.filter(sourceFile => sourceFile.endsWith('.html')).forEach(htmlAssetFile => {
+  const basePath = path.relative(sourceDir, htmlAssetFile);
+  shx.cp(path.join(tempDir, basePath), path.join(outputDir, basePath))
+});
+
 shx.rm('-r', tempDir);
 
 /** Creates a temporary directory with an unique name. */

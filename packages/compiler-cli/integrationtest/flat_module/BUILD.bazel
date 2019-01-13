@@ -9,5 +9,6 @@ build_ngc(
     npm_imports = {
         "@ngdeps//rxjs": "rxjs",
         "//packages/core:npm_package": "@angular/core",
-    }
+    },
+    module_name = "flat_module",
 )

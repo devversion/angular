@@ -63,6 +63,10 @@ build_ngc = rule(
         "tsconfig": attr.label(allow_single_file = True, mandatory = True),
         "npm_imports": attr.label_keyed_string_dict(allow_files = True),
 
+        # Picked up by the module resolution aspect from the TypeScript rules.
+        "module_name": attr.string(),
+        "module_root": attr.string(default = "ngc_build_output"),
+
         "_build_ngc": attr.label(
             default = Label("//packages/compiler-cli/integrationtest:build-ngc"),
             executable = True,

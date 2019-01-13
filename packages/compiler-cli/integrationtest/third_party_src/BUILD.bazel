@@ -4,7 +4,7 @@ load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
 
 build_ngc(
     name = "third_party_src",
-    srcs =  glob(["**/*"]),
+    srcs =  glob(["**/*.ts"]),
     tsconfig = ":tsconfig-build.json",
     npm_imports = {
         "@ngdeps//rxjs": "rxjs",

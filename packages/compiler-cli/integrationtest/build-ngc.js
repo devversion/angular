@@ -6,16 +6,16 @@ const shx = require('shelljs');
 const [
   sourceDir,
   outputDir,
-  inputTsconfigPath,
+  sourceTsconfigPath,
   sourceFilesArg,
   ...importMappingsArg
 ] = process.argv.slice(2);
 
 const sourceFiles = sourceFilesArg.split(',');
 const execRoot = process.cwd();
-const tempDir = createTmpDir();
 const ngcIndexPath = require.resolve('./ngc_bin');
-const tsconfigPath = path.join(tempDir, path.relative(sourceDir, inputTsconfigPath));
+const outputTsconfigPath = path.join(outputDir, path.relative(sourceDir, sourceTsconfigPath));
+const tsconfigContent = JSON.parse(fs.readFileSync(sourceTsconfigPath, 'utf8'));
 
 // #################################
 // Compute runtime import packages
@@ -27,48 +27,51 @@ const importMappings = importMappingsArg.reduce((result, mapping) => {
   return result;
 }, {});
 
+// Copy source files to output directory.
+sourceFiles.forEach(file => {
+  const filePath = path.join(outputDir, path.relative(sourceDir, file));
+
+  shx.mkdir('-p', path.dirname(filePath));
+  shx.cp(file, filePath)
+});
+
 
 // #################################
 // Prepare the temporary directory
 // #################################
 
-sourceFiles.forEach(file => {
-  const tempSourcePath = path.join(tempDir, path.relative(sourceDir, file));
-  shx.mkdir('-p', path.dirname(tempSourcePath));
-  shx.cp(file, tempSourcePath);
-});
+tsconfigContent['compilerOptions'] = tsconfigContent['compilerOptions'] || {};
+tsconfigContent['compilerOptions']['paths'] = tsconfigContent['compilerOptions']['paths'] || {};
 
 Object.keys(importMappings).forEach(packageName => {
-  const targetPath = path.join(tempDir, 'node_modules', packageName);
-
-  shx.mkdir('-p', targetPath);
-  shx.cp('-r', `${importMappings[packageName]}/*`, targetPath);
+  tsconfigContent['compilerOptions']['paths'][`${packageName}`] = [
+    importMappings[packageName],
+  ];
+  tsconfigContent['compilerOptions']['paths'][`${packageName}/*`] = [
+    importMappings[packageName] + '/*'
+  ];
 });
+
+//tsconfigContent.compilerOptions.outDir = path.relative(outputDir, execRoot);
+tsconfigContent.compilerOptions.rootDir = path.relative(outputDir, execRoot);
+
+tsconfigContent.compilerOptions.typeRoots = [
+  path.resolve(execRoot, 'external/ngdeps/node_modules/@types')
+];
+
+fs.writeFileSync(outputTsconfigPath, JSON.stringify(tsconfigContent, null, 2));
 
 // #################################
 // Run NGC and generate output.
 // #################################
 
-child_process.spawnSync(ngcIndexPath, ['-p', tsconfigPath], {stdio: 'inherit'});
+const ngcProcess = child_process.spawnSync(ngcIndexPath, ['-p', outputTsconfigPath], {stdio: 'inherit'});
 
-// #################################
-// Write output to Bazel out
-// #################################
-
-shx.cp('-r', `${tempDir}/dist/*`, outputDir);
-shx.mkdir('-p', path.join(outputDir, 'node_modules'))
-shx.cp('-r', `${tempDir}/node_modules/*`, path.join(outputDir, 'node_modules'));
-
-sourceFiles.filter(sourceFile => sourceFile.endsWith('.html')).forEach(htmlAssetFile => {
-  const basePath = path.relative(sourceDir, htmlAssetFile);
-  shx.cp(path.join(tempDir, basePath), path.join(outputDir, basePath))
-});
-
-shx.rm('-r', tempDir);
-
-/** Creates a temporary directory with an unique name. */
-function createTmpDir() {
-  const tmpDir = path.join(shx.tempdir(), `ng-bazel-${Math.random().toString(32)}`);
-  shx.mkdir('-p', tmpDir);
-  return tmpDir;
+if (ngcProcess.status !== 0) {
+  process.exit(1);
 }
+
+// Cleanup source files which were just needed for compiling in a flattened way.
+sourceFiles.filter(file => file.endsWith('.ts')).forEach(file => {
+  shx.rm(path.join(outputDir, path.relative(sourceDir, file)));
+});

@@ -4,7 +4,7 @@ load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
 
 build_ngc(
     name = "flat_module",
-    srcs = glob(["**/*"]),
+    srcs = glob(["**/*.ts", "**/*.html"]),
     tsconfig = ":tsconfig-build.json",
     npm_imports = {
         "@ngdeps//rxjs": "rxjs",

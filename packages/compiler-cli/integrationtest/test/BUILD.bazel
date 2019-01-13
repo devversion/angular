@@ -3,7 +3,7 @@ load("//tools:defaults.bzl", "jasmine_node_test", "ts_library")
 ts_library(
     name = "test_lib",
     testonly = True,
-    srcs = ["init.ts", "forward_ref_spec.ts", "util.ts", "test-output.ts"],
+    srcs = glob(["**/*.ts"]),
     deps = [
         "//packages/core",
         "//packages/core/testing",

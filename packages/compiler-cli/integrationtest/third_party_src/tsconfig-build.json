@@ -1,4 +1,8 @@
 {
+  "angularCompilerOptions": {
+    "skipTemplateCodegen": true
+  },
+
   "compilerOptions": {
     "target": "es5",
     "experimentalDecorators": true,
@@ -7,9 +11,6 @@
     "rootDir": "",
     "declaration": true,
     "lib": ["es6", "dom"],
-    "baseUrl": ".",
-    "outDir": "./dist",
-     // Prevent scanning up the directory tree for types
-    "typeRoots": ["node_modules/@types"]
+    "baseUrl": "."
   }
 }

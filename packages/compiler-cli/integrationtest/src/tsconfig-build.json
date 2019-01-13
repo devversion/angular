@@ -11,8 +11,6 @@
     "experimentalDecorators": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    // TODO(devversion): This has been enabled while the test was disabled, so the test files
-    // are not compatible yet. This needs to be re-enabled in the future.
     "strictPropertyInitialization": false,
     "skipLibCheck": true,
     "moduleResolution": "node",
@@ -20,11 +18,9 @@
     "declaration": true,
     "lib": ["es6", "dom"],
     "baseUrl": ".",
-    "outDir": "./dist",
-    // Prevent scanning up the directory tree for types
-    "typeRoots": ["node_modules/@types"],
     "noUnusedLocals": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "types": ["jasmine"]
   },
 
   "files": [

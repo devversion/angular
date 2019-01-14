@@ -8,8 +8,8 @@
 
 import './init';
 
-import {BasicComp} from '../src/basic';
-import {CompWithAnalyzeEntryComponentsProvider, CompWithEntryComponents} from '../src/entry_components';
+import {BasicComp} from 'src/basic';
+import {CompWithAnalyzeEntryComponentsProvider, CompWithEntryComponents} from 'src/entry_components';
 
 import {createComponent} from './util';
 

@@ -7,7 +7,7 @@
  */
 
 import './init';
-import {BindingErrorComp} from '../src/errors';
+import {BindingErrorComp} from 'src/errors';
 import {createComponent} from './util';
 
 // TODO(tbosch): source maps does not currently work with the transformer pipeline

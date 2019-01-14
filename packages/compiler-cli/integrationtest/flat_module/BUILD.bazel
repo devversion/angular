@@ -2,6 +2,9 @@ package(default_visibility = ["//visibility:public"])
 
 load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
 
+TS_FILES = glob(["**/*.ts"])
+EXPECTED_OUTPUT = []
+
 build_ngc(
     name = "flat_module",
     srcs = glob(["**/*.ts", "**/*.html"]),

@@ -12,7 +12,8 @@ def _get_output_root_of_target(target, target_files):
         base_root = _get_root_of_files(target_files)
 
         if not base_root:
-            fail("Could not determine root for %s. Make sure that the target does not have output files mixed up with sources. This is not supported." % target.label)
+            fail("Could not determine root for %s. Make sure that the target does not have " +
+                "output files mixed up with sources. This is not supported." % target.label)
 
         pkg_root = base_root.path
 
@@ -28,8 +29,21 @@ def _build_ngc(ctx):
     package_import_files = []
     output_dir = ctx.actions.declare_directory("ngc_build_output")
 
-    args = ctx.actions.args()
+    declared_types = []
 
+    for file in ctx.files.srcs:
+        if file.path.endswith(".ts") and not file.path.endswith(".d.ts"):
+            relative_path = file.short_path[len(ctx.label.package) + 1:-3]
+
+            declared_types += [
+                ctx.actions.declare_file("ngc_build_output/%s.d.ts" % relative_path),
+                #ctx.actions.declare_file("ngc_build_output/%s.ngsummary.d.ts" % relative_path),
+            ]
+
+    for expected_type in ctx.attr.additional_declared_types:
+        declared_types += [ctx.actions.declare_file("ngc_build_output/%s" % expected_type)]
+
+    args = ctx.actions.args()
     args.add(ctx.label.package) # Source Dir
     args.add(output_dir.path) # Output Dir
     args.add(ctx.files.tsconfig) # Tsconfig Path relative.
@@ -49,12 +63,24 @@ def _build_ngc(ctx):
         progress_message = "Running NGC for %s" % ctx.label,
         mnemonic = "NGCBuild",
         inputs = ctx.files.srcs + ctx.files.tsconfig + package_import_files,
-        outputs = [output_dir],
+        outputs = [output_dir] + declared_types,
         executable = ctx.executable._build_ngc,
         arguments = [args],
     )
 
-    return DefaultInfo(files = depset([output_dir]))
+    # Return a structure that is compatible with the deps[] of a ts_library.
+    return struct(
+        files = depset([output_dir] + declared_types),
+        typescript = struct(
+            declarations = depset(declared_types),
+            transitive_declarations = depset(declared_types),
+            type_blacklisted_declarations = depset(),
+            es5_sources = depset([output_dir]),
+            es6_sources = depset(),
+            transitive_es5_sources = depset([output_dir]),
+            transitive_es6_sources = depset(),
+        ),
+    )
 
 build_ngc = rule(
     implementation = _build_ngc,
@@ -62,6 +88,7 @@ build_ngc = rule(
         "srcs": attr.label_list(mandatory = True, allow_files = True),
         "tsconfig": attr.label(allow_single_file = True, mandatory = True),
         "npm_imports": attr.label_keyed_string_dict(allow_files = True),
+        "additional_declared_types": attr.string_list(),
 
         # Picked up by the module resolution aspect from the TypeScript rules.
         "module_name": attr.string(),

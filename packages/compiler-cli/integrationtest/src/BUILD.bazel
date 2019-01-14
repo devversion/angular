@@ -4,6 +4,7 @@ load("//packages/compiler-cli/integrationtest:index.bzl", "build_ngc")
 
 build_ngc(
     name = "src",
+    module_name = "src",
     srcs =  glob(["**/*.ts", "**/*.html", "**/*.css"]),
     tsconfig = ":tsconfig-build.json",
     npm_imports = {
@@ -19,5 +20,8 @@ build_ngc(
         "//packages/compiler-cli/integrationtest/third_party_src": "third_party",
         "//packages/compiler-cli/integrationtest/flat_module": "flat_module"
     },
-    module_name = "src",
+    additional_declared_types = [
+        "module.ngfactory.d.ts",
+        "jit_summaries.ngsummary.d.ts",
+    ]
 )

@@ -9,19 +9,23 @@
 import {NgModuleRef} from '@angular/core';
 import {ComponentFixture} from '@angular/core/testing';
 import {platformServerTesting} from '@angular/platform-server/testing';
-import {srcPackage} from "./test-output";
 
-const {MainModuleNgFactory} = require(`${srcPackage}/module.ngfactory`);
+import {MainModule} from 'src/module';
+import {MainModuleNgFactory} from 'src/module.ngfactory';
 
-let mainModuleRef: NgModuleRef<any> = null !;
+let mainModuleRef: NgModuleRef<MainModule> = null !;
 beforeEach((done) => {
+  console.error(require.resolve('@angular/platform-browser'));
+  console.error('OK', (MainModuleNgFactory as any)['moduleType']['ngInjectorDef']['providers']);
+
   platformServerTesting().bootstrapModuleFactory(MainModuleNgFactory).then((moduleRef: any) => {
     mainModuleRef = moduleRef;
+    console.error('Instantiated');
     done();
   });
 });
 
-export function createModule(): NgModuleRef<any> {
+export function createModule(): NgModuleRef<MainModule> {
   return mainModuleRef;
 }
 

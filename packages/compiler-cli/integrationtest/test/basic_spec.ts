@@ -9,8 +9,8 @@ import './init';
 import * as fs from 'fs';
 import * as path from 'path';
 
-import {MultipleComponentsMyComp} from '../src/a/multiple_components';
-import {BasicComp} from '../src/basic';
+import {MultipleComponentsMyComp} from 'src/a/multiple_components';
+import {BasicComp} from 'src/basic';
 import {createComponent} from './util';
 
 describe('template codegen output', () => {

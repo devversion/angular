@@ -5,12 +5,13 @@ ts_library(
     testonly = True,
     srcs = glob(["**/*.ts"]),
     deps = [
-        "//packages/core",
-        "//packages/core/testing",
+        "//packages/core:npm_package",
         "//packages/compiler-cli",
         "//packages/platform-browser",
         "//packages/platform-server/testing",
         "@ngdeps//typescript",
+
+        "//packages/compiler-cli/integrationtest/src",
     ],
 )
 
@@ -25,7 +26,6 @@ jasmine_node_test(
         "//tools/testing:node",
     ],
     data = [
-        "//packages/compiler-cli/integrationtest/src",
         "//packages/compiler-cli/integrationtest/flat_module",
         "//packages/compiler-cli/integrationtest/third_party_src",
         "//packages/forms",

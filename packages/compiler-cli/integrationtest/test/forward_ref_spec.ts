@@ -6,10 +6,9 @@
  * found in the LICENSE file at https://angular.io/license
  */
 import './init';
-import {srcPackage} from "./test-output";
 
-const {CUSTOM} = require(`${srcPackage}/custom_token`);
-const {CompWithProviders} = require(`${srcPackage}/features`);
+import {CUSTOM} from 'src/custom_token';
+import {CompWithProviders} from 'src/features';
 
 import {createComponent, createModule} from './util';
 

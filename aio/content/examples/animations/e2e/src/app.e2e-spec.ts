@@ -1,7 +1,6 @@
 'use strict'; // necessary for es6 output in node
 
-import { browser, ExpectedConditions as EC } from 'protractor';
-import { logging } from 'selenium-webdriver';
+import { browser, logging } from 'protractor';
 import * as openClose from './open-close.po';
 import * as statusSlider from './status-slider.po';
 import * as toggle from './toggle.po';

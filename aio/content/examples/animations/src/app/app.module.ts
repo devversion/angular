@@ -4,6 +4,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
 import { AppComponent } from './app.component';
+import { InsertRemoveComponent } from './insert-remove.component';
 import { OpenCloseComponent } from './open-close.component';
 import { OpenClosePageComponent } from './open-close-page.component';
 import { OpenCloseChildComponent } from './open-close.component.4';
@@ -42,6 +43,7 @@ import { AboutComponent } from './about.component';
   // #enddocregion route-animation-data
   declarations: [
     AppComponent,
+    InsertRemoveComponent,
     StatusSliderComponent,
     OpenCloseComponent,
     OpenCloseChildComponent,

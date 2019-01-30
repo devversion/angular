@@ -1,0 +1,25 @@
+load("//aio/content/examples:cli_example.bzl", "cli_example", "cli_example_e2e")
+
+cli_example(
+    name = "example",
+    srcs = glob(["src/**/*.ts"], exclude = [
+        "src/**/*.1.ts",
+        "src/**/*.2.ts",
+        "src/**/*.3.ts",
+    ]),
+    deps = [
+        "//packages/animations",
+        "//packages/core",
+        "//packages/router",
+        "//packages/platform-browser",
+        "//packages/platform-browser/animations",
+        "//packages/platform-browser-dynamic",
+    ],
+    entry_module = "angular/aio/content/examples/animations/src/main",
+)
+
+cli_example_e2e(
+    name = "e2e_tests",
+    srcs = glob(["e2e/**/*.ts"]),
+    server = ":example_devserver",
+)

@@ -1,0 +1,23 @@
+load("//aio/content/examples:cli_example.bzl", "cli_example", "cli_example_e2e")
+
+cli_example(
+    name = "example",
+    srcs = glob(["src/**/*.ts"], exclude = [
+        "src/**/*.0.ts",
+        "src/**/*.1.ts",
+        "src/**/*.2.ts",
+        "src/**/*.3.ts",
+    ]),
+    deps = [
+        "//packages/core",
+        "//packages/platform-browser",
+        "//packages/platform-browser-dynamic",
+    ],
+    entry_module = "angular/aio/content/examples/attribute-directives/src/main",
+)
+
+cli_example_e2e(
+    name = "e2e_tests",
+    srcs = glob(["e2e/**/*.ts"]),
+    server = ":example_devserver",
+)

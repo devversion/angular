@@ -635,15 +635,6 @@ workflows:
           requires:
             - build-ivy-npm-packages
 
-  saucelabs_tests:
-    jobs:
-      - legacy-unit-tests-saucelabs
-    triggers:
-      - schedule:
-          # Runs the Saucelabs legacy tests every hour.
-          cron: "0 0,2,3,4 * * *"
-          filters: *publish_branches_filter
-
   aio_monitoring:
     jobs:
       - aio_monitoring

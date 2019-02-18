@@ -642,7 +642,10 @@ workflows:
       - schedule:
           # Runs the Saucelabs legacy tests every hour.
           cron: "0 0 * * *"
-
+          filters:
+            branches:
+              only:
+                - master
   aio_monitoring:
     jobs:
       - aio_monitoring

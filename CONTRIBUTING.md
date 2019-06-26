@@ -213,6 +213,7 @@ The following is the list of supported scopes:
 * **elements**
 * **forms**
 * **http**
+* **ivy**
 * **language-service**
 * **platform-browser**
 * **platform-browser-dynamic**
@@ -222,6 +223,7 @@ The following is the list of supported scopes:
 * **router**
 * **service-worker**
 * **upgrade**
+* **zone.js**
 
 There are currently a few exceptions to the "use package name" rule:
 

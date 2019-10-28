@@ -19,10 +19,12 @@ export interface TestSupport {
   angularCorePath: string;
   typesRoots: string;
   writeConfig({
-      srcTargetPath, depPaths, pathMapping,
+      srcTargetPath, depPaths, pathMapping, extendedTsconfigFilePath, fullTemplateTypeCheck,
   }: {
     srcTargetPath: string,
     depPaths?: string[],
+    extendedTsconfigFilePath?: string,
+    fullTemplateTypeCheck?: boolean,
     pathMapping?: Array<{moduleName: string; path: string;}>,
   }): {compilerOptions: ts.CompilerOptions};
   read(fileName: string): string;
@@ -98,10 +100,13 @@ export function setup(
   }
 
   function writeConfig({
-      srcTargetPath, depPaths = [], pathMapping = [],
+      srcTargetPath, depPaths = [], pathMapping = [], extendedTsconfigFilePath,
+      fullTemplateTypeCheck,
   }: {
     srcTargetPath: string,
     depPaths?: string[],
+    extendedTsconfigFilePath?: string,
+    fullTemplateTypeCheck?: boolean,
     pathMapping?: Array<{moduleName: string; path: string;}>,
   }) {
     srcTargetPath = path.resolve(basePath, srcTargetPath);
@@ -136,6 +141,8 @@ export function setup(
       outDir: bazelBinPath, compilationTargetSrc,
       files: files,
       pathMapping: pathMappingObj,
+      extends: extendedTsconfigFilePath,
+      fullTemplateTypeCheck: fullTemplateTypeCheck,
     });
     write(path.resolve(basePath, tsConfigJsonPath), JSON.stringify(tsconfig, null, 2));
     return tsconfig;

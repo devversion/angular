@@ -11,6 +11,7 @@ import * as path from 'path';
 const EXT = /(\.ts|\.d\.ts|\.js|\.jsx|\.tsx)$/;
 
 export interface TsConfigOptions {
+  extends: string|undefined;
   defaultTsConfig: any;
   outDir: string;
   rootDir: string;
@@ -19,6 +20,7 @@ export interface TsConfigOptions {
   target: string;
   compilationTargetSrc: string[];
   files: string[];
+  fullTemplateTypeCheck: boolean;
 }
 
 /**
@@ -31,6 +33,7 @@ export function createTsConfig(options: TsConfigOptions) {
   const result = options.defaultTsConfig;
 
   return {
+    'extends': options.extends,
     'compilerOptions': {
       ...result.compilerOptions,
       'outDir': options.outDir,
@@ -74,6 +77,7 @@ export function createTsConfig(options: TsConfigOptions) {
     },
     'files': options.files,
     'angularCompilerOptions': {
+      fullTemplateTypeCheck: options.fullTemplateTypeCheck,
       ...result.angularCompilerOptions,
       'expectedOut': [
         ...options.compilationTargetSrc.map(src => srcToExpectedOut(src, 'js', options)),

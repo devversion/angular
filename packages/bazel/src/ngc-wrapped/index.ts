@@ -26,6 +26,39 @@ const ALL_DEPS_COMPILED_WITH_BAZEL = false;
 
 const NODE_MODULES = 'node_modules/';
 
+/**
+ * List of Angular compiler options which can be specified in the
+ * user tsconfig file and are used if not overwritten by Bazel.
+ */
+const ANGULAR_COMPILER_USER_OPTIONS = [
+  'diagnostics',
+  'trace',
+  'disableExpressionLowering',
+  'disableTypeScriptVersionCheck',
+  'preserveWhitespaces',
+  'createExternalSymbolFactoryReexports',
+
+  // i18n flags.
+  'i18nOutLocale',
+  'i18nOutFormat',
+  'i18nOutFile',
+  'i18nInFormat',
+  'i18nInLocale',
+  'i18nInFile',
+  'i18nInMissingTranslations',
+  'i18nUseExternalIds',
+
+  // Ivy template type checking flags.
+  'strictTemplates',
+  'strictInputTypes',
+  'strictNullInputTypes',
+  'strictAttributeTypes',
+  'strictSafeNavigationTypes',
+  'strictDomLocalRefTypes',
+  'strictOutputEventTypes',
+  'strictDomEventTypes',
+];
+
 export function main(args) {
   if (runAsWorker(args)) {
     runWorkerLoop(runOneBuild);
@@ -68,48 +101,15 @@ export function runOneBuild(args: string[], inputs?: {[path: string]: string}): 
       return false;
     }
 
-    // All user angularCompilerOptions values that a user has control
-    // over should be collected here
+    // A subset of Angular compiler options can be specified in the
+    // user-specified tsconfig file.
     if (userConfig.angularCompilerOptions) {
-      angularCompilerOptions['diagnostics'] =
-          angularCompilerOptions['diagnostics'] || userConfig.angularCompilerOptions.diagnostics;
-      angularCompilerOptions['trace'] =
-          angularCompilerOptions['trace'] || userConfig.angularCompilerOptions.trace;
-
-      angularCompilerOptions['disableExpressionLowering'] =
-          angularCompilerOptions['disableExpressionLowering'] ||
-          userConfig.angularCompilerOptions.disableExpressionLowering;
-      angularCompilerOptions['disableTypeScriptVersionCheck'] =
-          angularCompilerOptions['disableTypeScriptVersionCheck'] ||
-          userConfig.angularCompilerOptions.disableTypeScriptVersionCheck;
-
-      angularCompilerOptions['i18nOutLocale'] = angularCompilerOptions['i18nOutLocale'] ||
-          userConfig.angularCompilerOptions.i18nOutLocale;
-      angularCompilerOptions['i18nOutFormat'] = angularCompilerOptions['i18nOutFormat'] ||
-          userConfig.angularCompilerOptions.i18nOutFormat;
-      angularCompilerOptions['i18nOutFile'] =
-          angularCompilerOptions['i18nOutFile'] || userConfig.angularCompilerOptions.i18nOutFile;
-
-      angularCompilerOptions['i18nInFormat'] =
-          angularCompilerOptions['i18nInFormat'] || userConfig.angularCompilerOptions.i18nInFormat;
-      angularCompilerOptions['i18nInLocale'] =
-          angularCompilerOptions['i18nInLocale'] || userConfig.angularCompilerOptions.i18nInLocale;
-      angularCompilerOptions['i18nInFile'] =
-          angularCompilerOptions['i18nInFile'] || userConfig.angularCompilerOptions.i18nInFile;
-
-      angularCompilerOptions['i18nInMissingTranslations'] =
-          angularCompilerOptions['i18nInMissingTranslations'] ||
-          userConfig.angularCompilerOptions.i18nInMissingTranslations;
-      angularCompilerOptions['i18nUseExternalIds'] = angularCompilerOptions['i18nUseExternalIds'] ||
-          userConfig.angularCompilerOptions.i18nUseExternalIds;
-
-      angularCompilerOptions['preserveWhitespaces'] =
-          angularCompilerOptions['preserveWhitespaces'] ||
-          userConfig.angularCompilerOptions.preserveWhitespaces;
-
-      angularCompilerOptions.createExternalSymbolFactoryReexports =
-          angularCompilerOptions.createExternalSymbolFactoryReexports ||
-          userConfig.angularCompilerOptions.createExternalSymbolFactoryReexports;
+      ANGULAR_COMPILER_USER_OPTIONS.forEach(flagName => {
+        const userOptionValue = userConfig.angularCompilerOptions[flagName];
+        if (angularCompilerOptions[flagName] === undefined && userOptionValue !== undefined) {
+          angularCompilerOptions[flagName] = userOptionValue;
+        }
+      });
     }
   }
 

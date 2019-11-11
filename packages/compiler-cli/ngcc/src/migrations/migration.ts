@@ -11,7 +11,9 @@ import {MetadataReader} from '../../../src/ngtsc/metadata';
 import {PartialEvaluator} from '../../../src/ngtsc/partial_evaluator';
 import {ClassDeclaration, Decorator} from '../../../src/ngtsc/reflection';
 import {HandlerFlags} from '../../../src/ngtsc/transform';
+import {OutputTransform} from '../analysis/types';
 import {NgccReflectionHost} from '../host/ngcc_host';
+
 
 
 /**
@@ -36,6 +38,8 @@ export interface MigrationHost {
   readonly metadata: MetadataReader;
   /** Provides access to navigate the AST in a format-agnostic manner. */
   readonly reflectionHost: NgccReflectionHost;
+  /** Provides access to the program's type checker. */
+  readonly typeChecker: ts.TypeChecker;
   /** Enables expressions to be statically evaluated in the context of the program. */
   readonly evaluator: PartialEvaluator;
   /**
@@ -46,6 +50,8 @@ export interface MigrationHost {
    */
   injectSyntheticDecorator(clazz: ClassDeclaration, decorator: Decorator, flags?: HandlerFlags):
       void;
+
+  addTransform(node: ts.Node, transform: OutputTransform): void;
 
   /**
    * Retrieves all decorators that are associated with the class, including synthetic decorators

@@ -100,6 +100,9 @@ export class Renderer {
           outputText,
           renderConstantPool(compiledFile.sourceFile, compiledFile.constantPool, importManager),
           compiledFile.sourceFile);
+
+      // Apply all custom transforms collected in the analysis phase.
+      compiledFile.transforms.forEach(transformFn => transformFn(outputText));
     }
 
     // Add exports to the entry-point file

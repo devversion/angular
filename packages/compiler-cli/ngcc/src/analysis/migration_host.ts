@@ -16,7 +16,7 @@ import {DecoratorHandler, HandlerFlags} from '../../../src/ngtsc/transform';
 import {NgccReflectionHost} from '../host/ngcc_host';
 import {MigrationHost} from '../migrations/migration';
 
-import {AnalyzedClass, AnalyzedFile} from './types';
+import {AnalyzedClass, AnalyzedFile, OutputTransform} from './types';
 import {analyzeDecorators, isWithinPackage} from './util';
 
 /**
@@ -26,8 +26,13 @@ import {analyzeDecorators, isWithinPackage} from './util';
 export class DefaultMigrationHost implements MigrationHost {
   constructor(
       readonly reflectionHost: NgccReflectionHost, readonly metadata: MetadataReader,
-      readonly evaluator: PartialEvaluator, private handlers: DecoratorHandler<any, any>[],
-      private entryPointPath: AbsoluteFsPath, private analyzedFiles: AnalyzedFile[]) {}
+      readonly evaluator: PartialEvaluator, readonly typeChecker: ts.TypeChecker,
+      private handlers: DecoratorHandler<any, any>[], private entryPointPath: AbsoluteFsPath,
+      private analyzedFiles: AnalyzedFile[]) {}
+
+  addTransform(node: ts.Node, transform: OutputTransform): void {
+    getOrCreateAnalyzedFile(this.analyzedFiles, node.getSourceFile()).transforms.push(transform);
+  }
 
   injectSyntheticDecorator(clazz: ClassDeclaration, decorator: Decorator, flags?: HandlerFlags):
       void {
@@ -72,7 +77,7 @@ function getOrCreateAnalyzedFile(
   if (analyzedFile !== undefined) {
     return analyzedFile;
   } else {
-    const newAnalyzedFile: AnalyzedFile = {sourceFile, analyzedClasses: []};
+    const newAnalyzedFile: AnalyzedFile = {sourceFile, analyzedClasses: [], transforms: []};
     analyzedFiles.push(newAnalyzedFile);
     return newAnalyzedFile;
   }

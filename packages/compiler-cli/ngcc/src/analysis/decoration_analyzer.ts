@@ -140,7 +140,7 @@ export class DecorationAnalyzer {
     const analyzedClasses = this.reflectionHost.findClassSymbols(sourceFile)
                                 .map(symbol => this.analyzeClass(symbol))
                                 .filter(isDefined);
-    return analyzedClasses.length ? {sourceFile, analyzedClasses} : undefined;
+    return analyzedClasses.length ? {sourceFile, analyzedClasses, transforms: []} : undefined;
   }
 
   protected analyzeClass(symbol: NgccClassSymbol): AnalyzedClass|null {
@@ -156,7 +156,7 @@ export class DecorationAnalyzer {
 
   protected applyMigrations(analyzedFiles: AnalyzedFile[]): void {
     const migrationHost = new DefaultMigrationHost(
-        this.reflectionHost, this.fullMetaReader, this.evaluator, this.handlers,
+        this.reflectionHost, this.fullMetaReader, this.evaluator, this.typeChecker, this.handlers,
         this.bundle.entryPoint.path, analyzedFiles);
 
     this.migrations.forEach(migration => {
@@ -187,7 +187,11 @@ export class DecorationAnalyzer {
       const reexports: Reexport[] = this.getReexportsForClass(declaration);
       return {...analyzedClass, compilation, reexports};
     });
-    return {constantPool, sourceFile: analyzedFile.sourceFile, compiledClasses};
+    return {
+      constantPool,
+      sourceFile: analyzedFile.sourceFile, compiledClasses,
+      transforms: analyzedFile.transforms
+    };
   }
 
   protected compileClass(clazz: AnalyzedClass, constantPool: ConstantPool): CompileResult[] {

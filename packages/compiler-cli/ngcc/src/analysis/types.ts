@@ -10,10 +10,14 @@ import * as ts from 'typescript';
 import {Reexport} from '../../../src/ngtsc/imports';
 import {ClassDeclaration, Decorator} from '../../../src/ngtsc/reflection';
 import {CompileResult, DecoratorHandler} from '../../../src/ngtsc/transform';
+import MagicString from 'magic-string';
+
+export type OutputTransform = (output: MagicString) => void;
 
 export interface AnalyzedFile {
   sourceFile: ts.SourceFile;
   analyzedClasses: AnalyzedClass[];
+  transforms: OutputTransform[];
 }
 
 export interface AnalyzedClass {
@@ -37,6 +41,7 @@ export interface CompiledFile {
   compiledClasses: CompiledClass[];
   sourceFile: ts.SourceFile;
   constantPool: ConstantPool;
+  transforms: OutputTransform[];
 }
 
 export type DecorationAnalyses = Map<ts.SourceFile, CompiledFile>;

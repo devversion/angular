@@ -24,14 +24,6 @@ import {generateSetClassMetadataCall} from './metadata';
 import {createSourceSpan, findAngularDecorator, getConstructorDependencies, isAngularDecorator, readBaseClass, resolveProvidersRequiringFactory, unwrapConstructorDependencies, unwrapExpression, unwrapForwardRef, validateConstructorDependencies, wrapFunctionExpressionsInParens, wrapTypeReference} from './util';
 
 const EMPTY_OBJECT: {[key: string]: string} = {};
-const FIELD_DECORATORS = [
-  'Input', 'Output', 'ViewChild', 'ViewChildren', 'ContentChild', 'ContentChildren', 'HostBinding',
-  'HostListener'
-];
-const LIFECYCLE_HOOKS = new Set([
-  'ngOnChanges', 'ngOnInit', 'ngOnDestroy', 'ngDoCheck', 'ngAfterViewInit', 'ngAfterViewChecked',
-  'ngAfterContentInit', 'ngAfterContentChecked'
-]);
 
 export interface DirectiveHandlerData {
   baseClass: Reference<ClassDeclaration>|'dynamic'|null;
@@ -55,27 +47,11 @@ export class DirectiveDecoratorHandler implements
 
   detect(node: ClassDeclaration, decorators: Decorator[]|null):
       DetectResult<Decorator|null>|undefined {
-    // If the class is undecorated, check if any of the fields have Angular decorators or lifecycle
-    // hooks, and if they do, label the class as an abstract directive.
-    if (!decorators) {
-      const angularField = this.reflector.getMembersOfClass(node).find(member => {
-        if (!member.isStatic && member.kind === ClassMemberKind.Method &&
-            LIFECYCLE_HOOKS.has(member.name)) {
-          return true;
-        }
-        if (member.decorators) {
-          return member.decorators.some(
-              decorator => FIELD_DECORATORS.some(
-                  decoratorName => isAngularDecorator(decorator, decoratorName, this.isCore)));
-        }
-        return false;
-      });
-      return angularField ? {trigger: angularField.node, decorator: null, metadata: null} :
-                            undefined;
-    } else {
-      const decorator = findAngularDecorator(decorators, 'Directive', this.isCore);
-      return decorator ? {trigger: decorator.node, decorator, metadata: decorator} : undefined;
+    if (decorators === null) {
+      return undefined;
     }
+    const decorator = findAngularDecorator(decorators, 'Directive', this.isCore);
+    return decorator ? {trigger: decorator.node, decorator, metadata: decorator} : undefined;
   }
 
   analyze(node: ClassDeclaration, decorator: Readonly<Decorator|null>, flags = HandlerFlags.NONE):

@@ -49,7 +49,8 @@ runInEachFileSystem(() => {
       const reflectionHost = new Esm2015ReflectionHost(new MockLogger(), false, entryPoint.src);
       const compiler = new NgccTraitCompiler(handlers, reflectionHost);
       const host = new DefaultMigrationHost(
-          reflectionHost, mockMetadata, mockEvaluator, compiler, entryPoint.entryPoint.path);
+          reflectionHost, mockMetadata, mockEvaluator, /* isCore */ false, compiler,
+          entryPoint.entryPoint.path);
       return {compiler, host};
     }
 

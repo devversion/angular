@@ -216,15 +216,18 @@ runInEachFileSystem(() => {
 
         it('should call `apply()` on each migration for each class', () => {
           expect(migrationLogs).toEqual([
+            'migration1:NoDecorators',
             'migration1:MyComponent',
             'migration1:MyDirective',
+            'migration1:MyService',
             'migration1:MyOtherComponent',
+            'migration2:NoDecorators',
             'migration2:MyComponent',
             'migration2:MyDirective',
+            'migration2:MyService',
             'migration2:MyOtherComponent',
           ]);
         });
-
 
         it('should analyze, resolve and compile the classes that are detected', () => {
           expect(logs).toEqual([

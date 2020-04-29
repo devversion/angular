@@ -16,12 +16,14 @@ import {absoluteFrom, dirname, FileSystem, LogicalFileSystem, resolve} from '../
 import {AbsoluteModuleStrategy, LocalIdentifierStrategy, LogicalProjectStrategy, ModuleResolver, NOOP_DEFAULT_IMPORT_RECORDER, PrivateExportAliasingHost, Reexport, ReferenceEmitter} from '../../../src/ngtsc/imports';
 import {CompoundMetadataReader, CompoundMetadataRegistry, DtsMetadataReader, InjectableClassRegistry, LocalMetadataRegistry} from '../../../src/ngtsc/metadata';
 import {PartialEvaluator} from '../../../src/ngtsc/partial_evaluator';
+import {ClassDeclaration} from '../../../src/ngtsc/reflection';
 import {LocalModuleScopeRegistry, MetadataDtsModuleScopeResolver} from '../../../src/ngtsc/scope';
 import {DecoratorHandler} from '../../../src/ngtsc/transform';
 import {NgccReflectionHost} from '../host/ngcc_host';
 import {Migration} from '../migrations/migration';
 import {MissingInjectableMigration} from '../migrations/missing_injectable_migration';
 import {UndecoratedChildMigration} from '../migrations/undecorated_child_migration';
+import {UndecoratedClassWithDecoratedFieldsMigration} from '../migrations/undecorated_class_with_decorated_fields_migration';
 import {UndecoratedParentMigration} from '../migrations/undecorated_parent_migration';
 import {EntryPointBundle} from '../packages/entry_point_bundle';
 
@@ -29,7 +31,6 @@ import {DefaultMigrationHost} from './migration_host';
 import {NgccTraitCompiler} from './ngcc_trait_compiler';
 import {CompiledClass, CompiledFile, DecorationAnalyses} from './types';
 import {isWithinPackage, NOOP_DEPENDENCY_TRACKER} from './util';
-
 
 
 /**
@@ -61,6 +62,8 @@ export class DecorationAnalyzer {
   private packagePath = this.bundle.entryPoint.package;
   private isCore = this.bundle.isCore;
   private compilerOptions = this.tsConfig !== null ? this.tsConfig.options : {};
+  private migrationDiagnostics: ts.Diagnostic[] = [];
+  private fileToClasses = new Map<ts.SourceFile, ClassDeclaration[]>();
 
   moduleResolver =
       new ModuleResolver(this.program, this.options, this.host, /* moduleResolutionCache */ null);
@@ -125,8 +128,12 @@ export class DecorationAnalyzer {
   migrations: Migration[] = [
     new UndecoratedParentMigration(),
     new UndecoratedChildMigration(),
+    new UndecoratedClassWithDecoratedFieldsMigration(),
     new MissingInjectableMigration(),
   ];
+  migrationHost = new DefaultMigrationHost(
+      this.reflectionHost, this.fullMetaReader, this.evaluator, this.isCore, this.compiler,
+      this.bundle.entryPoint.path);
 
   constructor(
       private fs: FileSystem, private bundle: EntryPointBundle,
@@ -153,52 +160,39 @@ export class DecorationAnalyzer {
     this.reportDiagnostics();
 
     const decorationAnalyses = new DecorationAnalyses();
-    for (const analyzedFile of this.compiler.analyzedFiles) {
+    for (const analyzedFile of this.compiler.analyzedFilesWithTraits) {
       const compiledFile = this.compileFile(analyzedFile);
       decorationAnalyses.set(compiledFile.sourceFile, compiledFile);
     }
     return decorationAnalyses;
   }
 
-  protected applyMigrations(): void {
-    const migrationHost = new DefaultMigrationHost(
-        this.reflectionHost, this.fullMetaReader, this.evaluator, this.compiler,
-        this.bundle.entryPoint.path);
+  /** Applies migrations for all classes that have been analyzed in the compiler. */
+  protected applyMigrations() {
+    for (const migration of this.migrations) {
+      this.compiler.allClasses.forEach(clazz => this.applyMigrationForClass(migration, clazz));
+    }
+  }
 
-    this.migrations.forEach(migration => {
-      this.compiler.analyzedFiles.forEach(analyzedFile => {
-        const records = this.compiler.recordsFor(analyzedFile);
-        if (records === null) {
-          throw new Error('Assertion error: file to migrate must have records.');
-        }
-
-        records.forEach(record => {
-          const addDiagnostic = (diagnostic: ts.Diagnostic) => {
-            if (record.metaDiagnostics === null) {
-              record.metaDiagnostics = [];
-            }
-            record.metaDiagnostics.push(diagnostic);
-          };
-
-          try {
-            const result = migration.apply(record.node, migrationHost);
-            if (result !== null) {
-              addDiagnostic(result);
-            }
-          } catch (e) {
-            if (isFatalDiagnosticError(e)) {
-              addDiagnostic(e.toDiagnostic());
-            } else {
-              throw e;
-            }
-          }
-        });
-      });
-    });
+  /** Applies a given migration to the specified class declaration. */
+  private applyMigrationForClass(migration: Migration, clazz: ClassDeclaration) {
+    try {
+      const result = migration.apply(clazz, this.migrationHost);
+      if (result !== null) {
+        this.migrationDiagnostics.push(result);
+      }
+    } catch (e) {
+      if (isFatalDiagnosticError(e)) {
+        this.migrationDiagnostics.push(e.toDiagnostic());
+      } else {
+        throw e;
+      }
+    }
   }
 
   protected reportDiagnostics() {
     this.compiler.diagnostics.forEach(this.diagnosticHandler);
+    this.migrationDiagnostics.forEach(this.diagnosticHandler);
   }
 
   protected compileFile(sourceFile: ts.SourceFile): CompiledFile {

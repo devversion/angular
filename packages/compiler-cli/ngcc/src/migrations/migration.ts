@@ -32,6 +32,8 @@ export interface Migration {
 }
 
 export interface MigrationHost {
+  /** Whether the currently processed entry-point corresponds to the Angular core package. */
+  readonly isCore: boolean;
   /** Provides access to the decorator information associated with classes. */
   readonly metadata: MetadataReader;
   /** Provides access to navigate the AST in a format-agnostic manner. */

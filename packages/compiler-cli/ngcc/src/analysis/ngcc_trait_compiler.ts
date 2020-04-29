@@ -21,6 +21,9 @@ import {isDefined} from '../utils';
  * performs.
  */
 export class NgccTraitCompiler extends TraitCompiler {
+  /** List of all class declarations that have been checked for traits. */
+  allClasses: ClassDeclaration[] = [];
+
   constructor(
       handlers: DecoratorHandler<unknown, unknown, unknown>[],
       private ngccReflector: NgccReflectionHost) {
@@ -29,7 +32,7 @@ export class NgccTraitCompiler extends TraitCompiler {
         /* compileNonExportedClasses */ true, new DtsTransformRegistry());
   }
 
-  get analyzedFiles(): ts.SourceFile[] {
+  get analyzedFilesWithTraits(): ts.SourceFile[] {
     return Array.from(this.fileToClasses.keys());
   }
 
@@ -40,7 +43,9 @@ export class NgccTraitCompiler extends TraitCompiler {
   analyzeFile(sf: ts.SourceFile): void {
     const ngccClassSymbols = this.ngccReflector.findClassSymbols(sf);
     for (const classSymbol of ngccClassSymbols) {
-      this.analyzeClass(classSymbol.declaration.valueDeclaration, null);
+      const clazz = classSymbol.declaration.valueDeclaration;
+      this.allClasses.push(clazz);
+      this.analyzeClass(clazz, null);
     }
 
     return undefined;

@@ -24,8 +24,8 @@ import {isWithinPackage} from './util';
 export class DefaultMigrationHost implements MigrationHost {
   constructor(
       readonly reflectionHost: NgccReflectionHost, readonly metadata: MetadataReader,
-      readonly evaluator: PartialEvaluator, private compiler: NgccTraitCompiler,
-      private entryPointPath: AbsoluteFsPath) {}
+      readonly evaluator: PartialEvaluator, readonly isCore: boolean,
+      private compiler: NgccTraitCompiler, private entryPointPath: AbsoluteFsPath) {}
 
   injectSyntheticDecorator(clazz: ClassDeclaration, decorator: Decorator, flags?: HandlerFlags):
       void {

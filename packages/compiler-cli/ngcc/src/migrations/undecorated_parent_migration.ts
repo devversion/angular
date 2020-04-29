@@ -68,6 +68,7 @@ export class UndecoratedParentMigration implements Migration {
       // Do not proceed if the base class already has a decorator, or is not in scope of the
       // entry-point that is currently being compiled.
       if (hasDirectiveDecorator(host, baseClazz) || !host.isInScope(baseClazz)) {
+        console.error('Skipping', baseClazz.name.text, hasDirectiveDecorator(host, baseClazz))
         break;
       }
 

@@ -91,24 +91,28 @@ function runUndecoratedClassesMigration(
   // Analyze source files by detecting all directives, components and providers.
   sourceFiles.forEach(sourceFile => declarationCollector.visitNode(sourceFile));
 
-  const {decoratedDirectives, decoratedProviders, undecoratedDeclarations} = declarationCollector;
+  const {decoratedDirectives, decoratedProviders, decoratedPipes, undecoratedDeclarations} =
+      declarationCollector;
   const transform =
       new UndecoratedClassesTransform(typeChecker, compiler, partialEvaluator, getUpdateRecorder);
   const updateRecorders = new Map<ts.SourceFile, UpdateRecorder>();
 
   // Run the migrations for decorated providers and both decorated and undecorated
   // directives. The transform failures are collected and converted into human-readable
-  // failures which can be printed to the console.
-  [...transform.migrateDecoratedDirectives(decoratedDirectives),
+  // failures which can be printed to the console. **Note**: It's important that
+  // undecorated declarations are migrated first, so that the undecorated parent
+  // migration could skip classes that have been decorated by the migration.
+  [...transform.migrateUndecoratedDeclarations(Array.from(undecoratedDeclarations)),
+   ...transform.migrateDecoratedDirectives(decoratedDirectives),
    ...transform.migrateDecoratedProviders(decoratedProviders),
-   ...transform.migrateUndecoratedDeclarations(Array.from(undecoratedDeclarations))]
-      .forEach(({node, message}) => {
-        const nodeSourceFile = node.getSourceFile();
-        const relativeFilePath = relative(basePath, nodeSourceFile.fileName);
-        const {line, character} =
-            ts.getLineAndCharacterOfPosition(node.getSourceFile(), node.getStart());
-        failures.push(`${relativeFilePath}@${line + 1}:${character + 1}: ${message}`);
-      });
+   ...transform.migrateDecoratedPipes(decoratedPipes),
+  ].forEach(({node, message}) => {
+    const nodeSourceFile = node.getSourceFile();
+    const relativeFilePath = relative(basePath, nodeSourceFile.fileName);
+    const {line, character} =
+        ts.getLineAndCharacterOfPosition(node.getSourceFile(), node.getStart());
+    failures.push(`${relativeFilePath}@${line + 1}:${character + 1}: ${message}`);
+  });
 
   // Record the changes collected in the import manager and transformer.
   transform.recordChanges();

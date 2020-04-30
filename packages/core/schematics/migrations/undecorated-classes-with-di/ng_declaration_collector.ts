@@ -26,6 +26,9 @@ export class NgDeclarationCollector {
   /** List of resolved providers which are decorated. */
   decoratedProviders: ts.ClassDeclaration[] = [];
 
+  /** List of resolved pipes which are decorated. */
+  decoratedPipes: ts.ClassDeclaration[] = [];
+
   /** Set of resolved Angular declarations which are not decorated. */
   undecoratedDeclarations = new Set<ts.ClassDeclaration>();
 
@@ -51,6 +54,8 @@ export class NgDeclarationCollector {
       this.decoratedDirectives.push(node);
     } else if (hasInjectableDecorator(node, this.typeChecker, ngDecorators)) {
       this.decoratedProviders.push(node);
+    } else if (hasPipeDecorator(node, this.typeChecker, ngDecorators)) {
+      this.decoratedPipes.push(node);
     } else if (ngModuleDecorator) {
       this._visitNgModuleDecorator(ngModuleDecorator);
     }
@@ -123,14 +128,20 @@ export function hasDirectiveDecorator(
       .some(({name}) => name === 'Directive' || name === 'Component');
 }
 
-
-
 /** Checks whether the given node has the "@Injectable" decorator set. */
 export function hasInjectableDecorator(
     node: ts.ClassDeclaration, typeChecker: ts.TypeChecker, ngDecorators?: NgDecorator[]): boolean {
   return (ngDecorators || getNgClassDecorators(node, typeChecker))
       .some(({name}) => name === 'Injectable');
 }
+
+/** Checks whether the given node has the "@Pipe" decorator set. */
+export function hasPipeDecorator(
+    node: ts.ClassDeclaration, typeChecker: ts.TypeChecker, ngDecorators?: NgDecorator[]): boolean {
+  return (ngDecorators || getNgClassDecorators(node, typeChecker))
+      .some(({name}) => name === 'Pipe');
+}
+
 /** Whether the given node has an explicit decorator that describes an Angular declaration. */
 export function hasNgDeclarationDecorator(node: ts.ClassDeclaration, typeChecker: ts.TypeChecker) {
   return getNgClassDecorators(node, typeChecker)

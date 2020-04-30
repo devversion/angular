@@ -177,7 +177,27 @@ describe('Undecorated classes with DI migration', () => {
       }`);
   });
 
-  it('should add @Injectable() decorator to extended base class', async () => {
+  it('should add @Directive() decorator to base class of @Pipe', async () => {
+    writeFile('/index.ts', `
+      import {Pipe, NgModule, NgZone} from '@angular/core';
+
+      export class BaseClass {
+        constructor(zone: NgZone) {}
+      }
+      
+      @Pipe({name: 'test'})
+      export class MyService extends BaseClass {}
+
+      @NgModule({declarations: [MyService]})
+      export class AppModule {}
+    `);
+
+    await runMigration();
+
+    expect(tree.readContent('/index.ts')).toMatch(/@Directive\(\)\nexport class BaseClass {/);
+  });
+
+  it('should add @Injectable() decorator to base class of @Injectable', async () => {
     writeFile('/index.ts', `
       import {Injectable, NgModule, NgZone} from '@angular/core';
 
@@ -195,27 +215,6 @@ describe('Undecorated classes with DI migration', () => {
     await runMigration();
 
     expect(tree.readContent('/index.ts')).toMatch(/@Injectable\(\)\nexport class BaseClass {/);
-  });
-
-  it('should not decorate base class for decorated pipe', async () => {
-    writeFile('/index.ts', dedent`
-      import {Component, NgModule, Pipe, PipeTransform} from '@angular/core';
-
-      @Pipe({name: 'test'})
-      export class MyPipe extends PipeTransform {}
-
-      @NgModule({declarations: [MyPipe]})
-      export class AppModule {}
-    `);
-
-    await runMigration();
-
-    expect(errorOutput.length).toBe(0);
-    expect(warnOutput.length).toBe(0);
-
-    expect(tree.readContent('/index.ts')).toContain(dedent`
-      @Pipe({name: 'test'})
-      export class MyPipe extends PipeTransform {}`);
   });
 
   it('should not decorate base class if no constructor is inherited', async () => {
@@ -317,6 +316,56 @@ describe('Undecorated classes with DI migration', () => {
       @Directive({selector: 'base-class'})
       export class BaseClass {`);
   });
+
+  it('should not migrate @Directive base class of @Pipe if constructor is inherited', async () => {
+    writeFile('/index.ts', `
+      import {Pipe, Directive, NgModule, NgZone} from '@angular/core';
+
+      @Directive({selector: 'test'})
+      export class BaseClass {
+        constructor(zone: NgZone) {}
+      }
+      
+      @Pipe({name: 'test'})
+      export class MyService extends BaseClass {}
+
+      @NgModule({declarations: [MyService]})
+      export class AppModule {}
+    `);
+
+    await runMigration();
+
+    expect(tree.readContent('/index.ts'))
+        .toMatch(/core';\s+@Directive\(.+\)\s+export class BaseClass {/);
+  });
+
+  it('should not migrate class detected as undecorated child and undecorated base class twice',
+     async () => {
+       writeFile('/index.ts', `
+      import {Pipe, Directive, NgModule, NgZone} from '@angular/core';
+
+      @Directive({selector: 'test'})
+      export class BaseClass {
+        constructor(zone: NgZone) {}
+      }
+      
+      export class PassThrough extends BaseClass {}
+      
+      @Pipe({name: 'test'})
+      export class MyService extends PassThrough {}
+
+      @NgModule({declarations: [BaseClass]})
+      export class BaseModule {}
+
+      @NgModule({declarations: [MyService, PassThrough]})
+      export class AppModule {}
+    `);
+
+       await runMigration();
+
+       expect(tree.readContent('/index.ts'))
+           .toMatch(/}\s+@Directive\(.*\)\s+export class PassThrough/);
+     });
 
   it('should add a comment if the base class is declared through type definition', async () => {
     writeFile('/node_modules/my-lib/package.json', JSON.stringify({

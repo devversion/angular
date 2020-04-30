@@ -19,7 +19,7 @@ import {getImportOfIdentifier} from '../../utils/typescript/imports';
 
 import {convertDirectiveMetadataToExpression, UnexpectedMetadataValueError} from './decorator_rewrite/convert_directive_metadata';
 import {DecoratorRewriter} from './decorator_rewrite/decorator_rewriter';
-import {hasDirectiveDecorator, hasInjectableDecorator} from './ng_declaration_collector';
+import {hasDirectiveDecorator, hasInjectableDecorator, hasPipeDecorator} from './ng_declaration_collector';
 import {UpdateRecorder} from './update_recorder';
 
 
@@ -45,10 +45,8 @@ export class UndecoratedClassesTransform {
   private symbolResolver: StaticSymbolResolver;
   private metadataResolver: CompileMetadataResolver;
 
-  /** Set of class declarations which have been decorated with "@Directive". */
-  private decoratedDirectives = new Set<ts.ClassDeclaration>();
-  /** Set of class declarations which have been decorated with "@Injectable" */
-  private decoratedProviders = new Set<ts.ClassDeclaration>();
+  /** Set of class declarations which have been decorated in the migration. */
+  private decoratedClasses = new Set<ts.ClassDeclaration>();
   /**
    * Set of class declarations which have been analyzed and need to specify
    * an explicit constructor.
@@ -81,7 +79,8 @@ export class UndecoratedClassesTransform {
    */
   migrateDecoratedDirectives(directives: ts.ClassDeclaration[]): TransformFailure[] {
     return directives.reduce(
-        (failures, node) => failures.concat(this._migrateDirectiveBaseClass(node)),
+        (failures, node) => failures.concat(this._migrateDecoratedClassWithInheritedCtor(
+            node, clazz => this._addAbstractDirectiveDecoratorIfNeeded(clazz))),
         [] as TransformFailure[]);
   }
 
@@ -92,26 +91,31 @@ export class UndecoratedClassesTransform {
    */
   migrateDecoratedProviders(providers: ts.ClassDeclaration[]): TransformFailure[] {
     return providers.reduce(
-        (failures, node) => failures.concat(this._migrateProviderBaseClass(node)),
+        (failures, node) => failures.concat(this._migrateDecoratedClassWithInheritedCtor(
+            node, clazz => this._addInjectableDecoratorIfNeeded(clazz))),
         [] as TransformFailure[]);
   }
 
-  private _migrateProviderBaseClass(node: ts.ClassDeclaration): TransformFailure[] {
-    return this._migrateDecoratedClassWithInheritedCtor(
-        node, symbol => this.metadataResolver.isInjectable(symbol),
-        node => this._addInjectableDecorator(node));
+  /**
+   * Migrates decorated pipes which can potentially inherit a constructor
+   * from an undecorated base class. All base classes until the first one
+   * with an explicit constructor will be decorated with the "@Directive()".
+   * Note: Such base classes are intentionally not decorated with `@Pipe(..)`
+   * as that would require a name and there is no concept of abstract pipes.
+   * As the base class could only be used for DI and could access the node
+   * injector, using `@Directive()` is suitable for ensuring that a proper
+   * factory is generated.
+   */
+  migrateDecoratedPipes(providers: ts.ClassDeclaration[]): TransformFailure[] {
+    return providers.reduce(
+        (failures, node) => failures.concat(this._migrateDecoratedClassWithInheritedCtor(
+            node, clazz => this._addAbstractDirectiveDecoratorIfNeeded(clazz))),
+        [] as TransformFailure[]);
   }
-
-  private _migrateDirectiveBaseClass(node: ts.ClassDeclaration): TransformFailure[] {
-    return this._migrateDecoratedClassWithInheritedCtor(
-        node, symbol => this.metadataResolver.isDirective(symbol),
-        node => this._addAbstractDirectiveDecorator(node));
-  }
-
 
   private _migrateDecoratedClassWithInheritedCtor(
-      node: ts.ClassDeclaration, isClassDecorated: (symbol: StaticSymbol) => boolean,
-      addClassDecorator: (node: ts.ClassDeclaration) => void): TransformFailure[] {
+      node: ts.ClassDeclaration,
+      addClassDecoratorIfNeeded: (node: ts.ClassDeclaration) => void): TransformFailure[] {
     // In case the provider has an explicit constructor, we don't need to do anything
     // because the class is already decorated and does not inherit a constructor.
     if (hasExplicitConstructor(node)) {
@@ -119,22 +123,22 @@ export class UndecoratedClassesTransform {
     }
 
     const orderedBaseClasses = findBaseClassDeclarations(node, this.typeChecker);
-    const undecoratedBaseClasses: ts.ClassDeclaration[] = [];
+    const intermediaryBaseClasses: ts.ClassDeclaration[] = [];
 
     for (let {node: baseClass, identifier} of orderedBaseClasses) {
       const baseClassFile = baseClass.getSourceFile();
 
       if (hasExplicitConstructor(baseClass)) {
-        // All classes in between the decorated class and the undecorated class
-        // that defines the constructor need to be decorated as well.
-        undecoratedBaseClasses.forEach(b => addClassDecorator(b));
+        // All classes in between the decorated class and the undecorated class that
+        // defines the constructor need to be decorated as well if they are not yet.
+        intermediaryBaseClasses.forEach(b => addClassDecoratorIfNeeded(b));
 
         if (baseClassFile.isDeclarationFile) {
           const staticSymbol = this._getStaticSymbolOfIdentifier(identifier);
 
-          // If the base class is decorated through metadata files, we don't
-          // need to add a comment to the derived class for the external base class.
-          if (staticSymbol && isClassDecorated(staticSymbol)) {
+          // If the base class is decorated (by having metadata defined), we don't
+          // need to add a comment to the derived class.
+          if (staticSymbol && this._isStaticSymbolWithAngularMetadata(staticSymbol)) {
             break;
           }
 
@@ -142,12 +146,12 @@ export class UndecoratedClassesTransform {
           // used as anchor for a comment explaining that the class that defines the
           // constructor cannot be decorated automatically.
           const lastDecoratedClass =
-              undecoratedBaseClasses[undecoratedBaseClasses.length - 1] || node;
+              intermediaryBaseClasses[intermediaryBaseClasses.length - 1] || node;
           return this._addMissingExplicitConstructorTodo(lastDecoratedClass);
         }
 
-        // Decorate the class that defines the constructor that is inherited.
-        addClassDecorator(baseClass);
+        // If needed, decorate the class that defines the inherited constructor.
+        addClassDecoratorIfNeeded(baseClass);
         break;
       }
 
@@ -155,7 +159,7 @@ export class UndecoratedClassesTransform {
       // the base class with the explicit constructor. The decorator will be only
       // added for base classes which can be modified.
       if (!baseClassFile.isDeclarationFile) {
-        undecoratedBaseClasses.push(baseClass);
+        intermediaryBaseClasses.push(baseClass);
       }
     }
     return [];
@@ -163,11 +167,10 @@ export class UndecoratedClassesTransform {
 
   /**
    * Adds the abstract "@Directive()" decorator to the given class in case there
-   * is no existing directive decorator.
+   * is no existing Angular decorator applied.
    */
-  private _addAbstractDirectiveDecorator(baseClass: ts.ClassDeclaration) {
-    if (hasDirectiveDecorator(baseClass, this.typeChecker) ||
-        this.decoratedDirectives.has(baseClass)) {
+  private _addAbstractDirectiveDecoratorIfNeeded(baseClass: ts.ClassDeclaration) {
+    if (this._isClassWithAngularDecorator(baseClass)) {
       return;
     }
 
@@ -181,16 +184,15 @@ export class UndecoratedClassesTransform {
         this.printer.printNode(ts.EmitHint.Unspecified, newDecorator, baseClassFile);
 
     recorder.addClassDecorator(baseClass, newDecoratorText);
-    this.decoratedDirectives.add(baseClass);
+    this.decoratedClasses.add(baseClass);
   }
 
   /**
    * Adds the abstract "@Injectable()" decorator to the given class in case there
-   * is no existing directive decorator.
+   * is no existing Angular decorator applied.
    */
-  private _addInjectableDecorator(baseClass: ts.ClassDeclaration) {
-    if (hasInjectableDecorator(baseClass, this.typeChecker) ||
-        this.decoratedProviders.has(baseClass)) {
+  private _addInjectableDecoratorIfNeeded(baseClass: ts.ClassDeclaration) {
+    if (this._isClassWithAngularDecorator(baseClass)) {
       return;
     }
 
@@ -204,7 +206,33 @@ export class UndecoratedClassesTransform {
         this.printer.printNode(ts.EmitHint.Unspecified, newDecorator, baseClassFile);
 
     recorder.addClassDecorator(baseClass, newDecoratorText);
-    this.decoratedProviders.add(baseClass);
+    this.decoratedClasses.add(baseClass);
+  }
+
+  /**
+   * Checks whether the given class is decorated with either of the known
+   * Angular decorators: `@Directive`, `@Component`, `@Pipe` or `@Injectable`.
+   */
+  private _isClassWithAngularDecorator(node: ts.ClassDeclaration): boolean {
+    if (this.decoratedClasses.has(node)) {
+      return true;
+    }
+    if (!node.decorators || node.decorators.length === 0) {
+      return false;
+    }
+    const ngDecorators = getAngularDecorators(this.typeChecker, node.decorators);
+    return hasPipeDecorator(node, this.typeChecker, ngDecorators) ||
+        hasDirectiveDecorator(node, this.typeChecker, ngDecorators) ||
+        hasInjectableDecorator(node, this.typeChecker, ngDecorators);
+  }
+
+  /**
+   * Whether the given static symbol is a known Angular declaration with
+   * metadata (i.e. either a pipe, directory, component or injectable).
+   */
+  private _isStaticSymbolWithAngularMetadata(symbol: StaticSymbol): boolean {
+    return this.metadataResolver.isPipe(symbol) || this.metadataResolver.isDirective(symbol) ||
+        this.metadataResolver.isInjectable(symbol);
   }
 
   /** Adds a comment for adding an explicit constructor to the given class declaration. */
@@ -311,6 +339,7 @@ export class UndecoratedClassesTransform {
       }];
     }
 
+    this.decoratedClasses.add(node);
     this.getUpdateRecorder(targetSourceFile).addClassDecorator(node, newDecoratorText);
     return [];
   }

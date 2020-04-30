@@ -11,6 +11,7 @@ import {TempScopedNodeJsSyncHost} from '@angular-devkit/core/node/testing';
 import {HostTree} from '@angular-devkit/schematics';
 import {SchematicTestRunner, UnitTestTree} from '@angular-devkit/schematics/testing';
 import * as shx from 'shelljs';
+import {LIFECYCLE_HOOKS} from '../migrations/undecorated-classes-with-decorated-fields/transform';
 
 describe('Undecorated classes with decorated fields migration', () => {
   let runner: SchematicTestRunner;
@@ -226,6 +227,24 @@ describe('Undecorated classes with decorated fields migration', () => {
 
     await runMigration();
     expect(tree.readContent('/index.ts')).toContain(`@Directive()\nexport class Base {`);
+  });
+
+  LIFECYCLE_HOOKS.forEach(hookName => {
+    it(`should migrate undecorated class that uses lifecycle hook: ${hookName}`, async () => {
+      writeFile('/index.ts', `
+      import { Input } from '@angular/core';
+
+      export class SomeClassWithAngularFeatures {
+        ${hookName}() {
+          // noop for testing
+        }
+      }
+    `);
+
+      await runMigration();
+      expect(tree.readContent('/index.ts'))
+          .toContain(`@Directive()\nexport class SomeClassWithAngularFeatures {`);
+    });
   });
 
   it('should add @Directive to undecorated derived classes of a migrated class', async () => {

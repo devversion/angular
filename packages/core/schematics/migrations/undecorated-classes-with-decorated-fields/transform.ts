@@ -14,9 +14,18 @@ import {ImportManager} from '../../utils/import_manager';
 import {getAngularDecorators, NgDecorator} from '../../utils/ng_decorators';
 import {findBaseClassDeclarations} from '../../utils/typescript/find_base_classes';
 import {unwrapExpression} from '../../utils/typescript/functions';
+import {getPropertyNameText} from '../../utils/typescript/property_name';
 
 import {UpdateRecorder} from './update_recorder';
 
+/**
+ * Set of known lifecycle hooks that indicate that the current class needs
+ * a directive definition.
+ */
+export const LIFECYCLE_HOOKS = new Set([
+  'ngOnChanges', 'ngOnInit', 'ngOnDestroy', 'ngDoCheck', 'ngAfterViewInit', 'ngAfterViewChecked',
+  'ngAfterContentInit', 'ngAfterContentChecked'
+]);
 
 /** Analyzed class declaration. */
 interface AnalyzedClass {
@@ -40,8 +49,9 @@ export class UndecoratedClassesWithDecoratedFieldsTransform {
 
   /**
    * Migrates the specified source files. The transform adds the abstract `@Directive`
-   * decorator to classes that have Angular field decorators but are not decorated.
-   * https://hackmd.io/vuQfavzfRG6KUCtU7oK_EA
+   * decorator to undecorated classes that use Angular features. Class members which
+   * are decorated with any Angular decorator, or class members for lifecycle hooks are
+   * indicating that a given class uses Angular features. https://hackmd.io/vuQfavzfRG6KUCtU7oK_EA
    */
   migrate(sourceFiles: ts.SourceFile[]) {
     this._findUndecoratedAbstractDirectives(sourceFiles).forEach(node => {
@@ -116,7 +126,7 @@ export class UndecoratedClassesWithDecoratedFieldsTransform {
    */
   private _analyzeClassDeclaration(node: ts.ClassDeclaration): AnalyzedClass {
     const ngDecorators = node.decorators && getAngularDecorators(this.typeChecker, node.decorators);
-    const usesAngularFeatures = this._hasAngularDecoratedClassMember(node);
+    const usesAngularFeatures = this._hasAngularFeatureMember(node);
     if (ngDecorators === undefined || ngDecorators.length === 0) {
       return {isDirectiveOrComponent: false, isAbstractDirective: false, usesAngularFeatures};
     }
@@ -152,8 +162,17 @@ export class UndecoratedClassesWithDecoratedFieldsTransform {
     return selector == null;
   }
 
-  private _hasAngularDecoratedClassMember(node: ts.ClassDeclaration): boolean {
-    return node.members.some(
-        m => m.decorators && getAngularDecorators(this.typeChecker, m.decorators).length !== 0);
+  /**
+   * Whether the given class has a member for an Angular feature. e.g.
+   * lifecycle hooks or decorated members like `@Input` or `@Output`.
+   */
+  private _hasAngularFeatureMember(node: ts.ClassDeclaration): boolean {
+    return node.members.some(m => {
+      const propertyName = m.name !== undefined ? getPropertyNameText(m.name) : null;
+      if (propertyName !== null && LIFECYCLE_HOOKS.has(propertyName)) {
+        return true;
+      }
+      return m.decorators && getAngularDecorators(this.typeChecker, m.decorators).length !== 0;
+    });
   }
 }

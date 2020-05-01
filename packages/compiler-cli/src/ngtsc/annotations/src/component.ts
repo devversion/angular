@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {compileComponentFromMetadata, ConstantPool, CssSelector, DEFAULT_INTERPOLATION_CONFIG, DomElementSchemaRegistry, Expression, ExternalExpr, Identifiers, InterpolationConfig, LexerRange, makeBindingParser, ParseError, ParseSourceFile, parseTemplate, ParseTemplateOptions, R3ComponentMetadata, R3FactoryTarget, R3TargetBinder, SchemaMetadata, SelectorMatcher, Statement, TmplAstNode, WrappedNodeExpr} from '@angular/compiler';
+import {compileComponentFromMetadata, ConstantPool, CssSelector, DEFAULT_INTERPOLATION_CONFIG, DomElementSchemaRegistry, Expression, ExternalExpr, Identifiers, InterpolationConfig, LexerRange, makeBindingParser, ParseError, ParseSourceFile, parseTemplate, R3ComponentMetadata, R3FactoryTarget, R3TargetBinder, SchemaMetadata, SelectorMatcher, Statement, TmplAstNode, WrappedNodeExpr} from '@angular/compiler';
 import * as ts from 'typescript';
 
 import {CycleAnalyzer} from '../../cycles';
@@ -15,6 +15,7 @@ import {absoluteFrom, relative} from '../../file_system';
 import {DefaultImportRecorder, ModuleResolver, Reference, ReferenceEmitter} from '../../imports';
 import {DependencyTracker} from '../../incremental/api';
 import {IndexingContext} from '../../indexer';
+import {readBaseClass} from '../../inheritance';
 import {DirectiveMeta, extractDirectiveGuards, InjectableClassRegistry, MetadataReader, MetadataRegistry} from '../../metadata';
 import {flattenInheritedDirectiveMetadata} from '../../metadata/src/inheritance';
 import {EnumValue, PartialEvaluator} from '../../partial_evaluator';
@@ -30,7 +31,7 @@ import {getDirectiveDiagnostics, getProviderDiagnostics} from './diagnostics';
 import {extractDirectiveMetadata, parseFieldArrayValue} from './directive';
 import {compileNgFactoryDefField} from './factory';
 import {generateSetClassMetadataCall} from './metadata';
-import {findAngularDecorator, isAngularCoreReference, isExpressionForwardReference, makeDuplicateDeclarationError, readBaseClass, resolveProvidersRequiringFactory, unwrapExpression, wrapFunctionExpressionsInParens} from './util';
+import {findAngularDecorator, isAngularCoreReference, isExpressionForwardReference, resolveProvidersRequiringFactory, unwrapExpression, wrapFunctionExpressionsInParens} from './util';
 
 const EMPTY_MAP = new Map<string, Expression>();
 const EMPTY_ARRAY: any[] = [];
@@ -555,8 +556,7 @@ export class ComponentDecoratorHandler implements
       diagnostics.push(...viewProviderDiagnostics);
     }
 
-    const directiveDiagnostics = getDirectiveDiagnostics(
-        node, this.metaReader, this.evaluator, this.reflector, this.scopeRegistry, 'Component');
+    const directiveDiagnostics = getDirectiveDiagnostics(node, this.scopeRegistry, 'Component');
     if (directiveDiagnostics !== null) {
       diagnostics.push(...directiveDiagnostics);
     }

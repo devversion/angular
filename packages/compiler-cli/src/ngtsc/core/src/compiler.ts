@@ -17,6 +17,7 @@ import {getSourceFileOrError, LogicalFileSystem} from '../../file_system';
 import {AbsoluteModuleStrategy, AliasingHost, AliasStrategy, DefaultImportTracker, ImportRewriter, LocalIdentifierStrategy, LogicalProjectStrategy, ModuleResolver, NoopImportRewriter, PrivateExportAliasingHost, R3SymbolsImportRewriter, Reference, ReferenceEmitStrategy, ReferenceEmitter, RelativePathStrategy, UnifiedModulesAliasingHost, UnifiedModulesStrategy} from '../../imports';
 import {IncrementalDriver} from '../../incremental';
 import {generateAnalysis, IndexedComponent, IndexingContext} from '../../indexer';
+import {DeclarationInheritanceScanner} from '../../inheritance';
 import {CompoundMetadataReader, CompoundMetadataRegistry, DtsMetadataReader, InjectableClassRegistry, LocalMetadataRegistry, MetadataReader} from '../../metadata';
 import {ModuleWithProvidersScanner} from '../../modulewithproviders';
 import {PartialEvaluator} from '../../partial_evaluator';
@@ -33,7 +34,6 @@ import {getSourceFileOrNull, isDtsPath, resolveModuleName} from '../../util/src/
 import {LazyRoute, NgCompilerOptions} from '../api';
 
 import {NgCompilerHost} from './host';
-
 
 
 /**
@@ -53,6 +53,7 @@ interface LazyCompilationState {
   defaultImportTracker: DefaultImportTracker;
   aliasingHost: AliasingHost|null;
   refEmitter: ReferenceEmitter;
+  inheritanceScanner: DeclarationInheritanceScanner;
 }
 
 /**
@@ -162,8 +163,10 @@ export class NgCompiler {
   getDiagnostics(file?: ts.SourceFile): ts.Diagnostic[] {
     if (this.diagnostics === null) {
       const compilation = this.ensureAnalyzed();
-      this.diagnostics =
-          [...compilation.traitCompiler.diagnostics, ...this.getTemplateDiagnostics()];
+      this.diagnostics = [
+        ...compilation.traitCompiler.diagnostics,
+        ...compilation.inheritanceScanner.getDiagnostics(), ...this.getTemplateDiagnostics()
+      ];
       if (this.entryPoint !== null && compilation.exportReferenceGraph !== null) {
         this.diagnostics.push(...checkForPrivateExports(
             this.entryPoint, this.tsProgram.getTypeChecker(), compilation.exportReferenceGraph));
@@ -377,6 +380,13 @@ export class NgCompiler {
     traitCompiler.resolve();
 
     this.recordNgModuleScopeDependencies();
+
+    // Check the inheritance of all class declarations that have been
+    // detected in the trait compiler. We are not interested in checking
+    // inheritance of unknown classes in the program.
+    traitCompiler.allRecords().forEach(({node}) => {
+      this.compilation!.inheritanceScanner.checkInheritance(node);
+    });
 
     // At this point, analysis is complete and the compiler can now calculate which files need to
     // be emitted, so do that.
@@ -649,6 +659,9 @@ export class NgCompiler {
 
     const mwpScanner = new ModuleWithProvidersScanner(reflector, evaluator, refEmitter);
 
+    const inheritanceScanner =
+        new DeclarationInheritanceScanner(injectableRegistry, metaReader, reflector, evaluator);
+
     const isCore = isAngularCorePackage(this.tsProgram);
 
     const defaultImportTracker = new DefaultImportTracker();
@@ -668,7 +681,8 @@ export class NgCompiler {
       // clang-format off
         new DirectiveDecoratorHandler(
             reflector, evaluator, metaRegistry, scopeRegistry, metaReader,
-            defaultImportTracker, injectableRegistry, isCore, this.closureCompilerEnabled,
+            defaultImportTracker, injectableRegistry,
+            isCore, this.closureCompilerEnabled,
             // In ngtsc we no longer want to compile undecorated classes with Angular features.
             // Migrations for these patterns ran as part of `ng update` and we want to ensure
             // that projects do not regress. See https://hackmd.io/@alx/ryfYYuvzH for more details.
@@ -706,6 +720,7 @@ export class NgCompiler {
       defaultImportTracker,
       aliasingHost,
       refEmitter,
+      inheritanceScanner,
     };
   }
 }

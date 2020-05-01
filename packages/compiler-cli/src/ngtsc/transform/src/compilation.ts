@@ -159,6 +159,10 @@ export class TraitCompiler {
     return records;
   }
 
+  allRecords(): ClassRecord[] {
+    return Array.from(this.classes.values());
+  }
+
   /**
    * Import a `ClassRecord` from a previous compilation.
    *

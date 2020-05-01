@@ -11,6 +11,7 @@ import * as ts from 'typescript';
 
 import {ErrorCode, FatalDiagnosticError} from '../../diagnostics';
 import {DefaultImportRecorder, Reference} from '../../imports';
+import {readBaseClass} from '../../inheritance';
 import {InjectableClassRegistry, MetadataReader, MetadataRegistry} from '../../metadata';
 import {extractDirectiveGuards} from '../../metadata/src/util';
 import {DynamicValue, EnumValue, PartialEvaluator} from '../../partial_evaluator';
@@ -21,7 +22,7 @@ import {AnalysisOutput, CompileResult, DecoratorHandler, DetectResult, HandlerFl
 import {getDirectiveDiagnostics, getProviderDiagnostics, getUndecoratedClassWithAngularFeaturesDiagnostic} from './diagnostics';
 import {compileNgFactoryDefField} from './factory';
 import {generateSetClassMetadataCall} from './metadata';
-import {createSourceSpan, findAngularDecorator, getConstructorDependencies, isAngularDecorator, readBaseClass, resolveProvidersRequiringFactory, unwrapConstructorDependencies, unwrapExpression, unwrapForwardRef, validateConstructorDependencies, wrapFunctionExpressionsInParens, wrapTypeReference} from './util';
+import {createSourceSpan, findAngularDecorator, getConstructorDependencies, isAngularDecorator, resolveProvidersRequiringFactory, unwrapConstructorDependencies, unwrapExpression, unwrapForwardRef, validateConstructorDependencies, wrapFunctionExpressionsInParens, wrapTypeReference} from './util';
 
 const EMPTY_OBJECT: {[key: string]: string} = {};
 const FIELD_DECORATORS = [
@@ -77,9 +78,7 @@ export class DirectiveDecoratorHandler implements
     // been processed, but we want to enforce a consistent decorator mental model.
     // See: https://v9.angular.io/guide/migration-undecorated-classes.
     if (this.compileUndecoratedClassesWithAngularFeatures === false && decorator === null) {
-      return {
-        diagnostics: [getUndecoratedClassWithAngularFeaturesDiagnostic(node)]
-      };
+      return {diagnostics: [getUndecoratedClassWithAngularFeaturesDiagnostic(node)]};
     }
 
     const directiveResult = extractDirectiveMetadata(
@@ -141,8 +140,7 @@ export class DirectiveDecoratorHandler implements
       diagnostics.push(...providerDiagnostics);
     }
 
-    const directiveDiagnostics = getDirectiveDiagnostics(
-        node, this.metaReader, this.evaluator, this.reflector, this.scopeRegistry, 'Directive');
+    const directiveDiagnostics = getDirectiveDiagnostics(node, this.scopeRegistry, 'Directive');
     if (directiveDiagnostics !== null) {
       diagnostics.push(...directiveDiagnostics);
     }

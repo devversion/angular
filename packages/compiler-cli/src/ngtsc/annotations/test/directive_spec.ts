@@ -5,6 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
+import {DeclarationInheritanceScanner} from '@angular/compiler-cli/src/ngtsc/inheritance';
 import * as ts from 'typescript';
 
 import {absoluteFrom} from '../../file_system';
@@ -92,13 +93,15 @@ runInEachFileSystem(() => {
     const evaluator = new PartialEvaluator(reflectionHost, checker, /*dependencyTracker*/ null);
     const metaReader = new LocalMetadataRegistry();
     const dtsReader = new DtsMetadataReader(checker, reflectionHost);
+    const inheritanceScanner = new DeclarationInheritanceScanner(reflectionHost, evaluator);
     const scopeRegistry = new LocalModuleScopeRegistry(
         metaReader, new MetadataDtsModuleScopeResolver(dtsReader, null), new ReferenceEmitter([]),
         null);
     const injectableRegistry = new InjectableClassRegistry(reflectionHost);
     const handler = new DirectiveDecoratorHandler(
         reflectionHost, evaluator, scopeRegistry, scopeRegistry, metaReader,
-        NOOP_DEFAULT_IMPORT_RECORDER, injectableRegistry, /*isCore*/ false,
+        NOOP_DEFAULT_IMPORT_RECORDER, injectableRegistry, inheritanceScanner,
+        /*isCore*/ false,
         /*annotateForClosureCompiler*/ false,
         /*detectUndecoratedClassesWithAngularFeatures*/ false);
 

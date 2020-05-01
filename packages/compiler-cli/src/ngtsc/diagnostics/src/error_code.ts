@@ -32,17 +32,16 @@ export enum ErrorCode {
   /** Raised when an undecorated class is passed in as a provider to a module or a directive. */
   UNDECORATED_PROVIDER = 2005,
 
-  /**
-   * Raised when a Directive inherits its constructor from a base class without an Angular
-   * decorator.
-   */
-  DIRECTIVE_INHERITS_UNDECORATED_CTOR = 2006,
-
-  /**
-   * Raised when an undecorated class that is using Angular features
-   * has been discovered.
-   */
+  /** Raised when a declaration inherits its constructor from an undecorated base class. */
+  DECLARATION_INHERITS_UNDECORATED_CTOR = 2006,
+  /** Raised when an undecorated class is using Angular features. */
   UNDECORATED_CLASS_USING_ANGULAR_FEATURES = 2007,
+  /** Raised when an undecorated class is inheriting Angular features. */
+  UNDECORATED_CLASS_INHERITING_ANGULAR_FEATURES = 2008,
+  /** Raised when an injectable inherits directive or pipe metadata. */
+  INCOMPATIBLE_BASE_CLASS_FOR_INJECTABLE = 2009,
+  /** Raised when a pipe, directive or injectable inherits from an component. */
+  INCOMPATIBLE_COMPONENT_BASE_CLASS = 2010,
 
   SYMBOL_NOT_EXPORTED = 3001,
   SYMBOL_EXPORTED_UNDER_DIFFERENT_NAME = 3002,

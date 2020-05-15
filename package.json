@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/angular/angular.git"
+    "url": "https://github.com/angular/angular.git!"
   },
   "scripts": {
     "bazel:format": "find . -type f \\( -name \"*.bzl\" -or -name BUILD -or -name BUILD.bazel -or -name WORKSPACE \\) ! -path \"*/node_modules/*\" | xargs buildifier -v",

@@ -40,6 +40,8 @@ local_repository(
     path = "tools/npm_workspace",
 )
 
+
+
 # Check the bazel version and download npm dependencies
 load("@build_bazel_rules_nodejs//:defs.bzl", "check_bazel_version", "node_repositories")
 

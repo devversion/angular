@@ -1156,10 +1156,17 @@ const Zone: ZoneType = (function(global: any) {
 
     scheduleTask(targetZone: Zone, task: Task): Task {
       let returnTask: ZoneTask<any> = task as ZoneTask<any>;
+      
+      // The task count for the scheduled task should be updated in two cases:
+      //   1. The task runs in the root zone. This is purely so that the root zone task count can be
+      //      monitored at any time as there is no way to set up a ZoneSpec for it.
+      //   2. The current delegate has a ZoneSpec w/ `onScheduleTask` and `onHasTask`. The delegate will then
+      //      be notified on task count changes.
+      if (this.zone === Zone.root || (this._scheduleTasksZS && this._hasTasksZS)) {
+        returnTask._zoneDelegates!.push(this);
+      }
+      
       if (this._scheduleTaskZS) {
-        if (this._hasTaskZS) {
-          returnTask._zoneDelegates!.push(this._hasTaskDlgtOwner!);
-        }
         // clang-format off
         returnTask = this._scheduleTaskZS.onScheduleTask !(
             this._scheduleTaskDlgt !, this._scheduleTaskCurrZone !, targetZone, task) as ZoneTask<any>;

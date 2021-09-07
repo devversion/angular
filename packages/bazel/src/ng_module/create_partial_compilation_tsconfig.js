@@ -14,8 +14,8 @@ function main(inputExecPath, outputExecPath) {
 
   angularCompilerOptions['enableIvy'] = true;
   angularCompilerOptions['compilationMode'] = 'partial';
-  angularCompilerOptions['expectedOut'] = angularCompilerOptions['expectedOut'].map(
-      f => f.replace(/\.(m)?js$/, '.ivy-partial.js'));
+  angularCompilerOptions['expectedOut'] =
+      angularCompilerOptions['expectedOut'].map(f => f.replace(/\.(m)?js$/, '.ivy-partial.js'));
 
   // Write the new tsconfig to the specified output path.
   fs.writeFileSync(outputExecPath, JSON.stringify(data, null, 2));

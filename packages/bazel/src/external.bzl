@@ -29,6 +29,7 @@ load(
     _js_named_module_info = "js_named_module_info",
     _node_modules_aspect = "node_modules_aspect",
 )
+load("//packages/bazel/src/ng_module:partial_compilation.bzl", _partial_compilation_action = "partial_compilation_action")
 
 LinkablePackageInfo = _LinkablePackageInfo
 NpmPackageInfo = _NpmPackageInfo
@@ -69,3 +70,9 @@ TsConfigInfo = _TsConfigInfo
 js_ecma_script_module_info = _js_ecma_script_module_info
 js_module_info = _js_module_info
 js_named_module_info = _js_named_module_info
+
+# Exposed through `external.bzl` so that this can be replaced with an
+# empty macro in google3 where compilations cannot be replayed / where
+# partial compilation output is not needed at all.
+partial_compilation_action = _partial_compilation_action
+PARTIAL_COMPILATION_CREATE_TSCONFIG = "//packages/bazel/src/ng_module:create_partial_compilation_tsconfig"

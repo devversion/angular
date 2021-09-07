@@ -8,6 +8,7 @@ pkg_npm(
         exclude = ["yarn.lock"],
     ) + [
         "//packages/bazel/src:package_assets",
+        "//packages/bazel/src/ng_module:package_assets",
         "//packages/bazel/src/api-extractor:package_assets",
         "//packages/bazel/src/ng_package:package_assets",
         "//packages/bazel/src/ngc-wrapped:package_assets",

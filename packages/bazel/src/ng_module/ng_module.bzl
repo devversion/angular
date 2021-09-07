@@ -6,7 +6,7 @@
 """
 
 load(
-    ":external.bzl",
+    "//packages/bazel/src:external.bzl",
     "BuildSettingInfo",
     "COMMON_ATTRIBUTES",
     "COMMON_OUTPUTS",
@@ -16,12 +16,14 @@ load(
     "DEPS_ASPECTS",
     "LinkablePackageInfo",
     "NpmPackageInfo",
+    "PARTIAL_COMPILATION_CREATE_TSCONFIG",
     "TsConfigInfo",
     "compile_ts",
     "js_ecma_script_module_info",
     "js_module_info",
     "js_named_module_info",
     "node_modules_aspect",
+    "partial_compilation_action",
     "ts_providers_dict_to_struct",
     "tsc_wrapped_tsconfig",
 )
@@ -29,6 +31,14 @@ load(
 # enable_perf_logging controls whether Ivy's performance tracing system will be enabled for any
 # compilation which includes this provider.
 NgPerfInfo = provider(fields = ["enable_perf_logging"])
+
+NgPartialCompilationEsm = provider(
+    doc = """Partial compilation ES module output for Angular.""",
+    fields = {
+        "direct_sources": "Depset of direct files",
+        "sources": "Depset of direct and transitive files",
+    },
+)
 
 _FLAT_DTS_FILE_SUFFIX = ".bundle.d.ts"
 _R3_SYMBOLS_DTS_FILE = "src/r3_symbols.d.ts"
@@ -658,8 +668,21 @@ def ng_module_impl(ctx, ts_compile_actions):
 
     return providers
 
+def _collect_transitive_partial_compilation_sources(ctx, direct_sources):
+    transitive_depsets = [direct_sources]
+    for dep in ctx.attr.deps:
+        if NgPartialCompilationEsm in dep:
+            transitive_depsets.append(dep[NgPartialCompilationEsm].sources)
+    return depset(transitive = transitive_depsets)
+
 def _ng_module_impl(ctx):
     ts_providers = ng_module_impl(ctx, compile_ts)
+
+    partial_compilation_info = partial_compilation_action(
+        ctx,
+        ts_providers["typescript"]["replay_params"],
+    )
+    partial_compilation_outs = depset(partial_compilation_info.outputs)
 
     # Add in new JS providers
     # See design doc https://docs.google.com/document/d/1ggkY5RqUkVL4aQLYm7esRW978LgX3GUCnQirrk5E1C0/edit#
@@ -676,6 +699,10 @@ def _ng_module_impl(ctx):
         js_ecma_script_module_info(
             sources = ts_providers["typescript"]["es6_sources"],
             deps = ctx.attr.deps,
+        ),
+        NgPartialCompilationEsm(
+            direct_sources = partial_compilation_outs,
+            sources = _collect_transitive_partial_compilation_sources(ctx, partial_compilation_outs),
         ),
         # TODO: Add remaining shared JS providers from design doc
         # (JSModuleInfo) and remove legacy "typescript" provider
@@ -738,6 +765,11 @@ NG_MODULE_ATTRIBUTES = {
         default = Label(DEFAULT_NG_XI18N),
         executable = True,
         cfg = "host",
+    ),
+    "_create_partial_compilation_tsconfig": attr.label(
+        default = PARTIAL_COMPILATION_CREATE_TSCONFIG,
+        executable = True,
+        cfg = "exec",
     ),
     # In the angular/angular monorepo, //tools:defaults.bzl wraps the ng_module rule in a macro
     # which sets this attribute to the //packages/compiler-cli:ng_perf flag.

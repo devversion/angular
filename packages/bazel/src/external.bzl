@@ -24,12 +24,18 @@ load(
     "@build_bazel_rules_nodejs//:providers.bzl",
     _LinkablePackageInfo = "LinkablePackageInfo",
     _NpmPackageInfo = "NpmPackageInfo",
+    _JSEcmaScriptModuleInfo = "JSEcmaScriptModuleInfo",
     _js_ecma_script_module_info = "js_ecma_script_module_info",
     _js_module_info = "js_module_info",
     _js_named_module_info = "js_named_module_info",
     _node_modules_aspect = "node_modules_aspect",
 )
-load("//packages/bazel/src/ng_module:partial_compilation.bzl", _partial_compilation_action = "partial_compilation_action")
+load("//packages/bazel/src/ng_module:partial_compilation.bzl",
+  _partial_compilation_action = "partial_compilation_action")
+
+load("//packages/bazel/src/ng_module:partial_compilation_aspect.bzl",
+  _partial_compilation_aspect = "partial_compilation_aspect",
+  _NgPartialCompilationEsm = "NgPartialCompilationEsm")
 
 LinkablePackageInfo = _LinkablePackageInfo
 NpmPackageInfo = _NpmPackageInfo
@@ -67,6 +73,8 @@ DEFAULT_NG_XI18N = (
 )
 FLAT_DTS_FILE_SUFFIX = ".bundle.d.ts"
 TsConfigInfo = _TsConfigInfo
+
+JSEcmaScriptModuleInfo = _JSEcmaScriptModuleInfo
 js_ecma_script_module_info = _js_ecma_script_module_info
 js_module_info = _js_module_info
 js_named_module_info = _js_named_module_info
@@ -75,4 +83,6 @@ js_named_module_info = _js_named_module_info
 # empty macro in google3 where compilations cannot be replayed / where
 # partial compilation output is not needed at all.
 partial_compilation_action = _partial_compilation_action
+partial_compilation_aspect = _partial_compilation_aspect
+NgPartialCompilationEsm = _NgPartialCompilationEsm
 PARTIAL_COMPILATION_CREATE_TSCONFIG = "//packages/bazel/src/ng_module:create_partial_compilation_tsconfig"

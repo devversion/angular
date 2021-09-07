@@ -20,7 +20,7 @@ load(
     "PKG_NPM_OUTPUTS",
     "create_package",
 )
-load("//packages/bazel/src:external.bzl", "FLAT_DTS_FILE_SUFFIX")
+load("//packages/bazel/src:external.bzl", "FLAT_DTS_FILE_SUFFIX", "NgPartialCompilationEsm")
 load("//packages/bazel/src/ng_package:collect-type-definitions.bzl", "collect_type_definitions")
 
 # Prints a debug message if "--define=VERBOSE_LOGS=true" is specified.
@@ -311,7 +311,9 @@ def _ng_package_impl(ctx):
 
     esm_2015_files_depsets = []
     for dep in ctx.attr.deps:
-        if JSEcmaScriptModuleInfo in dep:
+        if NgPartialCompilationEsm in dep:
+            esm_2015_files_depsets.append(dep[NgPartialCompilationEsm].sources)
+        elif JSEcmaScriptModuleInfo in dep:
             esm_2015_files_depsets.append(dep[JSEcmaScriptModuleInfo].sources)
 
     esm_2015_files = _filter_out_generated_files(depset(transitive = esm_2015_files_depsets), "mjs")

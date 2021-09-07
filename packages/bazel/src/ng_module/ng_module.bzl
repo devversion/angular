@@ -13,6 +13,7 @@ load(
     "DEFAULT_API_EXTRACTOR",
     "DEFAULT_NG_COMPILER",
     "DEFAULT_NG_XI18N",
+    "JSEcmaScriptModuleInfo",
     "DEPS_ASPECTS",
     "LinkablePackageInfo",
     "NpmPackageInfo",
@@ -22,8 +23,10 @@ load(
     "js_ecma_script_module_info",
     "js_module_info",
     "js_named_module_info",
+    "NgPartialCompilationEsm",
     "node_modules_aspect",
     "partial_compilation_action",
+    "partial_compilation_aspect",
     "ts_providers_dict_to_struct",
     "tsc_wrapped_tsconfig",
 )
@@ -31,14 +34,6 @@ load(
 # enable_perf_logging controls whether Ivy's performance tracing system will be enabled for any
 # compilation which includes this provider.
 NgPerfInfo = provider(fields = ["enable_perf_logging"])
-
-NgPartialCompilationEsm = provider(
-    doc = """Partial compilation ES module output for Angular.""",
-    fields = {
-        "direct_sources": "Depset of direct files",
-        "sources": "Depset of direct and transitive files",
-    },
-)
 
 _FLAT_DTS_FILE_SUFFIX = ".bundle.d.ts"
 _R3_SYMBOLS_DTS_FILE = "src/r3_symbols.d.ts"
@@ -723,7 +718,7 @@ NG_MODULE_ATTRIBUTES = {
     "srcs": attr.label_list(allow_files = [".ts"]),
     "deps": attr.label_list(
         doc = "Targets that are imported by this target",
-        aspects = [node_modules_aspect, _collect_summaries_aspect] + DEPS_ASPECTS,
+        aspects = [node_modules_aspect, _collect_summaries_aspect, partial_compilation_aspect] + DEPS_ASPECTS,
     ),
     "assets": attr.label_list(
         doc = ".html and .css files needed by the Angular compiler",

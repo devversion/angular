@@ -1,10 +1,40 @@
 load("//tools:defaults.bzl", "api_golden_test", "pkg_npm", "ts_config", "ts_library")
+load("@npm//@bazel/rollup:index.bzl", "rollup_bundle")
 
 # Load ng_perf_flag explicitly from ng_perf.bzl as it's private API, and not exposed to other
 # consumers of @angular/bazel.
 load("//packages/bazel/src:ng_perf.bzl", "ng_perf_flag")
 
 package(default_visibility = ["//visibility:public"])
+
+PUBLIC_TARGETS = [
+    ":compiler-cli",
+    "//packages/compiler-cli/ngcc",
+    "//packages/compiler-cli/linker",
+    "//packages/compiler-cli/linker/babel",
+]
+
+rollup_bundle(
+    name = "bundles",
+    config_file = "rollup.config.js",
+    entry_points = {
+        ":index.ts": "compiler_cli",
+        "//packages/compiler-cli:src/bin/ngc.ts": "ngc_bin",
+        "//packages/compiler-cli/ngcc:main-ngcc.ts": "ngcc_bin",
+        "//packages/compiler-cli:src/bin/ng_xi18n.ts": "xi18n_bin",
+        "//packages/compiler-cli/linker:index.ts": "linker",
+        "//packages/compiler-cli/linker/babel:index.ts": "linker_babel",
+    },
+    format = "esm",
+    output_dir = True,
+    sourcemap = "true",
+    deps = [
+        "@npm//@rollup/plugin-commonjs",
+        "@npm//@rollup/plugin-node-resolve",
+        "@npm//rollup-plugin-preserve-shebang",
+        "@npm//rollup-plugin-sourcemaps",
+    ] + PUBLIC_TARGETS,
+)
 
 ts_config(
     name = "tsconfig",
@@ -63,14 +93,11 @@ pkg_npm(
         "//integration:__pkg__",
         "//packages/compiler-cli/integrationtest:__pkg__",
     ],
-    deps = [
-        ":compiler-cli",
-        "//packages/compiler-cli/linker",
-        "//packages/compiler-cli/linker/babel",
-        "//packages/compiler-cli/ngcc",
-        "//packages/compiler-cli/src/ngtsc/file_system/testing",
-        "//packages/compiler-cli/src/ngtsc/logging/testing",
-    ],
+    # Note: We add `PUBLIC_TARGETS` here to pull in the type definitions into
+    # the NPM package. This also brings in the devmode ES5 sources currently.
+    # These are not referenced anywhere but we would want to only include types.
+    # TODO(devversion): add support for including only type definitions here.
+    deps = [":bundles"] + PUBLIC_TARGETS,
 )
 
 api_golden_test(

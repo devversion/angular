@@ -8,6 +8,11 @@
 import {NodeJSFileSystem, setFileSystem} from './src/ngtsc/file_system';
 
 export {AotCompilerHost, AotCompilerHost as StaticReflectorHost, StaticReflector, StaticSymbol} from '@angular/compiler';
+
+// Exposed for advanced consumers that intend to invoke the CLI entry-points
+// programmatically (e.g. allowing configuration of custom TS transformers).
+export {mainXi18n} from './src/extract_i18n';
+export {main} from './src/main';
 export {VERSION} from './src/version';
 
 export * from './src/metadata';

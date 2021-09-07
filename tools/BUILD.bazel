@@ -1,10 +1,11 @@
-package(default_visibility = ["//visibility:public"])
-
 load("//tools:defaults.bzl", "nodejs_binary", "ts_config")
+
+package(default_visibility = ["//visibility:public"])
 
 exports_files([
     "tsconfig.json",
     "jasmine-seed-generator.js",
+    "rules_nodejs_allow_linker_mapping_skip.patch",
 ])
 
 ts_config(

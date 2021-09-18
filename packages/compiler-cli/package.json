@@ -21,6 +21,15 @@
     },
     "./linker/babel": {
       "default": "./bundles/linker_babel.js"
+    },
+    "./private/bazel": {
+      "default": "./bundles/private_bazel.js"
+    },
+    "./private/localize": {
+      "default": "./bundles/private_localize.js"
+    },
+    "./private/migrations": {
+      "default": "./bundles/private_migrations.js"
     }
   },
   "dependencies": {

@@ -44,7 +44,9 @@ export class ClusterMaster {
     }
 
     // Set the worker entry-point
-    cluster.setupMaster({exec: this.fileSystem.resolve(__dirname, 'worker.js')});
+    // Note: Ngcc is being bundled into a single file for the NPM package. If you change the file
+    // name here, make sure to update the bundle name in `packages/compiler-cli/BUILD.bazel`.
+    cluster.setupMaster({exec: this.fileSystem.resolve(__dirname, 'ngcc_cluster_worker.js')});
 
     this.taskQueue = analyzeEntryPoints();
     this.onTaskCompleted = createTaskCompletedCallback(this.taskQueue);

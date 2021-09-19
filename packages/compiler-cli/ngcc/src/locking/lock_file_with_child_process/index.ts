@@ -77,8 +77,10 @@ export class LockFileWithChildProcess implements LockFile {
     const logLevel =
         this.logger.level !== undefined ? this.logger.level.toString() : LogLevel.info.toString();
     const isWindows = process.platform === 'win32';
+    // Note: Ngcc is being bundled into a single file for the NPM package. If you change the file
+    // name here, make sure to update the bundle name in `packages/compiler-cli/BUILD.bazel`.
     const unlocker = fork(
-        __dirname + '/unlocker.js', [path, logLevel],
+        __dirname + '/ngcc_lock_unlocker.js', [path, logLevel],
         {detached: true, stdio: isWindows ? 'pipe' : 'inherit'});
     if (isWindows) {
       unlocker.stdout?.on('data', process.stdout.write.bind(process.stdout));

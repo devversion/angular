@@ -53,11 +53,21 @@ export class ApplicationInitStatus {
     readonly done = false;
     // (undocumented)
     readonly donePromise: Promise<any>;
-    }
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<ApplicationInitStatus, [{ optional: true; }]>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<ApplicationInitStatus>;
+}
 
 // @public
 export class ApplicationModule {
     constructor(appRef: ApplicationRef);
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<ApplicationModule, never>;
+    // (undocumented)
+    static ɵinj: i0.ɵɵInjectorDeclaration<ApplicationModule>;
+    // (undocumented)
+    static ɵmod: i0.ɵɵNgModuleDeclaration<ApplicationModule, never, never, never>;
 }
 
 // @public
@@ -70,7 +80,11 @@ export class ApplicationRef {
     readonly isStable: Observable<boolean>;
     tick(): void;
     get viewCount(): number;
-    }
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<ApplicationRef, never>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<ApplicationRef>;
+}
 
 // @public (undocumented)
 export function asNativeElements(debugEls: DebugElement[]): any;
@@ -128,6 +142,10 @@ export class Compiler {
     compileModuleAsync: <T>(moduleType: Type<T>) => Promise<NgModuleFactory<T>>;
     compileModuleSync: <T>(moduleType: Type<T>) => NgModuleFactory<T>;
     getModuleId(moduleType: Type<any>): string | undefined;
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<Compiler, never>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<Compiler>;
 }
 
 // @public
@@ -361,7 +379,7 @@ export class DefaultIterableDiffer<V> implements IterableDiffer<V>, IterableChan
     readonly length: number;
     // (undocumented)
     onDestroy(): void;
-    }
+}
 
 // @public @deprecated (undocumented)
 export const defineInjectable: typeof ɵɵdefineInjectable;
@@ -952,6 +970,10 @@ export class PlatformRef {
     get destroyed(): boolean;
     get injector(): Injector;
     onDestroy(callback: () => void): void;
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<PlatformRef, never>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<PlatformRef>;
 }
 
 // @public
@@ -1101,8 +1123,8 @@ export interface RendererType2 {
 export class ResolvedReflectiveFactory {
     constructor(
     factory: Function,
-    dependencies: ɵangular_packages_core_core_e[]);
-    dependencies: ɵangular_packages_core_core_e[];
+    dependencies: ReflectiveDependency[]);
+    dependencies: ReflectiveDependency[];
     factory: Function;
 }
 
@@ -1215,7 +1237,11 @@ export class SystemJsNgModuleLoader implements NgModuleFactoryLoader {
     constructor(_compiler: Compiler, config?: SystemJsNgModuleLoaderConfig);
     // (undocumented)
     load(path: string): Promise<NgModuleFactory<any>>;
-    }
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<SystemJsNgModuleLoader, [null, { optional: true; }]>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<SystemJsNgModuleLoader>;
+}
 
 // @public @deprecated
 export abstract class SystemJsNgModuleLoaderConfig {
@@ -1241,6 +1267,10 @@ export class Testability implements PublicTestability {
     increasePendingRequestCount(): number;
     isStable(): boolean;
     whenStable(doneCb: Function, timeout?: number, updateCb?: Function): void;
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<Testability, never>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<Testability>;
 }
 
 // @public
@@ -1253,6 +1283,10 @@ export class TestabilityRegistry {
     registerApplication(token: any, testability: Testability): void;
     unregisterAllApplications(): void;
     unregisterApplication(token: any): void;
+    // (undocumented)
+    static ɵfac: i0.ɵɵFactoryDeclaration<TestabilityRegistry, never>;
+    // (undocumented)
+    static ɵprov: i0.ɵɵInjectableDeclaration<TestabilityRegistry>;
 }
 
 // @public
@@ -1409,7 +1443,6 @@ export function ɵɵinject<T>(token: ProviderToken<T>, flags?: InjectFlags): T |
 
 // @public
 export function ɵɵinjectAttribute(attrNameToInject: string): string | null;
-
 
 // (No @packageDocumentation comment for this package)
 

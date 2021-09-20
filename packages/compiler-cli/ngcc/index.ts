@@ -5,6 +5,8 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
+
+import {join} from 'path';
 import {NodeJSFileSystem, setFileSystem} from '../src/ngtsc/file_system';
 
 import {mainNgcc} from './src/main';
@@ -20,3 +22,13 @@ export function process(options: AsyncNgccOptions|SyncNgccOptions): void|Promise
   setFileSystem(new NodeJSFileSystem());
   return mainNgcc(options);
 }
+
+/**
+ * Absolute file path that points to the `ngcc` entry-point.
+ *
+ * This can be used by the Angular CLI to spawn a process running ngcc using
+ * command line options.
+ */
+// Note: This path respects the rollup bundling. The `ngcc` command line
+// entry-point bundle name is configured in `packages/compiler-cli/BUILD.bazel`.
+export const ngccMainFilePath = join(__dirname, './ngcc_bin.js');

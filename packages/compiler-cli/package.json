@@ -16,6 +16,9 @@
     "./package.json": {
       "default": "./package.json"
     },
+    "./ngcc": {
+      "default": "./bundles/ngcc_index.js"
+    },
     "./linker": {
       "default": "./bundles/linker.js"
     },

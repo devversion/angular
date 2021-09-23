@@ -89,6 +89,8 @@ describe('@angular/common ng_package', () => {
           './http/testing': {default: './fesm2020/http/testing.mjs'},
           './testing': {default: './fesm2020/testing.mjs'},
           './upgrade': {default: './fesm2020/upgrade.mjs'},
+          './locales/global/*': {default: './locales/global/*.mjs'},
+          './locales/*': {default: './locales/*.mjs'},
         }
       }));
     });

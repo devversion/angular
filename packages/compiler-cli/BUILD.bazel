@@ -43,7 +43,6 @@ esbuild(
         "@angular/compiler",
         "typescript",
         "@babel/core",
-        "@babel/types",
         "reflect-metadata",
         "minimist",
         "canonical-path",

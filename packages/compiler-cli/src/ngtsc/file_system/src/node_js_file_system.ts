@@ -8,6 +8,7 @@
 /// <reference types="node" />
 import * as fs from 'fs';
 import * as p from 'path';
+import {fileURLToPath} from 'url';
 import {AbsoluteFsPath, FileStats, FileSystem, PathManipulation, PathSegment, PathString, ReadonlyFileSystem} from './types';
 
 /**
@@ -51,6 +52,8 @@ export class NodeJSPathManipulation implements PathManipulation {
   }
 }
 
+declare var __ESM_IMPORT_META_URL__: string;
+
 /**
  * A wrapper around the Node.js file-system that supports readonly operations and path manipulation.
  */
@@ -58,9 +61,15 @@ export class NodeJSReadonlyFileSystem extends NodeJSPathManipulation implements 
   private _caseSensitive: boolean|undefined = undefined;
   isCaseSensitive(): boolean {
     if (this._caseSensitive === undefined) {
+      // Note: The the identifier in `fileURLToPath` will be replaced as part of the rollup
+      // bundling of the `@angular/compiler-cli`. We cannot use `import.meta.url` directly
+      // as this code currently still runs in CommonJS for devmode.
+      // TODO(devversion): replace all of this with `import.meta.url` once devmode is using ESM.
+      const currentFileName =
+          typeof __filename !== 'undefined' ? __filename : fileURLToPath(__ESM_IMPORT_META_URL__);
       // Note the use of the real file-system is intentional:
       // `this.exists()` relies upon `isCaseSensitive()` so that would cause an infinite recursion.
-      this._caseSensitive = !fs.existsSync(this.normalize(toggleCase(__filename)));
+      this._caseSensitive = !fs.existsSync(this.normalize(toggleCase(currentFileName)));
     }
     return this._caseSensitive;
   }

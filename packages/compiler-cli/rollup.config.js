@@ -8,6 +8,7 @@
 
 const {nodeResolve} = require('@rollup/plugin-node-resolve');
 const commonjs = require('@rollup/plugin-commonjs');
+const replace = require('@rollup/plugin-replace');
 const preserveShebang = require('rollup-plugin-preserve-shebang');
 const sourcemaps = require('rollup-plugin-sourcemaps');
 
@@ -17,7 +18,16 @@ module.exports = {
   // TODO: Include Angular compiler here; but remove all deep-imports in the CLI.
   external: ['typescript', 'chokidar', 'yargs', 'semver'],
   onwarn: customWarningHandler,
-  plugins: [nodeResolve({preferBuiltins: true}), commonjs(), sourcemaps(), preserveShebang()],
+  plugins: [
+    // We cannot use `import.meta.url` in `NodeJSReadonlyFileSystem` as we still compile the
+    // compiler-cli for CommonJS in devmode. For the ESM bundles we should use the
+    // `import.meta.url` though. This can be removed once we switched devmode to ESM as well.
+    replace({preventAssignment: true, values: {__ESM_IMPORT_META_URL__: 'import.meta.url'}}),
+    nodeResolve({preferBuiltins: true}),
+    commonjs(),
+    sourcemaps(),
+    preserveShebang(),
+  ],
 };
 
 /** Custom warning handler for Rollup. */

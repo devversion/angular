@@ -8,7 +8,7 @@
 import {fromObject} from 'convert-source-map';
 import MagicString from 'magic-string';
 import {encode} from 'sourcemap-codec';
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 import {absoluteFrom, getFileSystem} from '../../../src/ngtsc/file_system';
 import {runInEachFileSystem, TestFile} from '../../../src/ngtsc/file_system/testing';

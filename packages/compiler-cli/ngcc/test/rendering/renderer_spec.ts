@@ -9,7 +9,7 @@ import {Statement} from '@angular/compiler';
 import {fromObject, fromSource, generateMapFileComment, SourceMapConverter} from 'convert-source-map';
 import MagicString from 'magic-string';
 import {encode, SourceMapMappings} from 'sourcemap-codec';
-import * as ts from 'typescript';
+import ts from 'typescript';
 
 import {absoluteFrom, getFileSystem} from '../../../src/ngtsc/file_system';
 import {runInEachFileSystem, TestFile} from '../../../src/ngtsc/file_system/testing';

@@ -6,6 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import minimist from 'minimist';
 import * as tsickle from 'tsickle';
 import ts from 'typescript';
 
@@ -115,13 +116,12 @@ function createEmitCallback(options: api.CompilerOptions): api.TsEmitCallback|un
            host,
            options
          }) =>
-             // tslint:disable-next-line:no-require-imports only depend on tsickle if requested
-      require('tsickle').emitWithTsickle(
-          program, {...tsickleHost, options, host, moduleResolutionHost: host}, host, options,
-          targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, {
-            beforeTs: customTransformers.before,
-            afterTs: customTransformers.after,
-          });
+             tsickle.emitWithTsickle(
+                 program, {...tsickleHost, options, moduleResolutionHost: host}, host, options,
+                 targetSourceFile, writeFile, cancellationToken, emitOnlyDtsFiles, {
+                   beforeTs: customTransformers.before,
+                   afterTs: customTransformers.after,
+                 });
 }
 
 export interface NgcParsedConfiguration extends ParsedConfiguration {
@@ -130,7 +130,7 @@ export interface NgcParsedConfiguration extends ParsedConfiguration {
 
 export function readNgcCommandLineAndConfiguration(args: string[]): NgcParsedConfiguration {
   const options: api.CompilerOptions = {};
-  const parsedArgs = require('minimist')(args);
+  const parsedArgs = minimist(args);
   if (parsedArgs.i18nFile) options.i18nInFile = parsedArgs.i18nFile;
   if (parsedArgs.i18nFormat) options.i18nInFormat = parsedArgs.i18nFormat;
   if (parsedArgs.locale) options.i18nInLocale = parsedArgs.locale;

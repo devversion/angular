@@ -395,7 +395,7 @@ def _ngc_tsconfig(ctx, files, srcs, **kwargs):
 
     # For prodmode, the compilation target is set to `ES2020`. `@bazel/typecript`
     # using the `create_tsconfig` function sets `ES2015` by default.
-    # https://github.com/bazelbuild/rules_nodejs/blob/master/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
+    # https://github.com/bazelbuild/rules_nodejs/blob/901df3868e3ceda177d3ed181205e8456a5592ea/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
     # TODO(devversion): In the future, combine prodmode and devmode so we can get rid of the
     # ambiguous erminology and concept that can result in slow-down for development workflows.
     if not is_devmode:

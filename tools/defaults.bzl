@@ -122,7 +122,7 @@ def ts_library(name, tsconfig = None, testonly = False, deps = [], module_name =
         deps = deps,
         # For prodmode, the target is set to `ES2020`. `@bazel/typecript` sets `ES2015` by
         # default. Note that this should be in sync with the `ng_module` tsconfig generation.
-        # https://github.com/bazelbuild/rules_nodejs/blob/master/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
+        # https://github.com/bazelbuild/rules_nodejs/blob/901df3868e3ceda177d3ed181205e8456a5592ea/third_party/github.com/bazelbuild/rules_typescript/internal/common/tsconfig.bzl#L195
         prodmode_target = "es2020",
         # `module_name` is used for AMD module names within emitted JavaScript files.
         module_name = module_name,

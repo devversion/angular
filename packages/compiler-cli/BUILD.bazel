@@ -39,7 +39,6 @@ esbuild(
         "//packages/compiler-cli/ngcc:src/execution/cluster/ngcc_cluster_worker.ts",
     ],
     external = [
-        # TODO(devversion): keep the compiler external here.
         "@angular/compiler",
         "typescript",
         "tsickle",

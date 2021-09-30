@@ -167,13 +167,17 @@ function main(args: string[]): void {
    */
   function copyFile(inputPath: string, outputRelativePath: string) {
     const fileContent = fs.readFileSync(inputPath, 'utf8');
-    const outputPath = path.join(outputDirExecPath, outputRelativePath);
-
-    // Always ensure that the target directory exists.
-    shx.mkdir('-p', path.dirname(outputPath));
-    fs.writeFileSync(outputPath, fileContent);
+    writeFile(outputRelativePath, fileContent);
   }
 
+  /**
+   * Gets the relative path for the given file within the owning package. This
+   * assumes the file is contained in the owning package.
+   *
+   * e.g. consider the owning package is `packages/core` and the input file
+   * is `packages/core/testing/index.d.ts`. This function would return the
+   * relative path as followed: `testing/index.d.ts`.
+   */
   function getOwningPackageRelativePath(file: BazelFileInfo): string {
     return path.relative(owningPackageName, file.shortPath);
   }

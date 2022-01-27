@@ -840,7 +840,7 @@ groups:
       - *can-be-global-approved
       - *can-be-global-docs-approved
       - >
-        contains_any_globs(files, [
+        contains_any_globs(files.exclude("packages/zone.js/package.json"), [
           'packages/zone.js/**',
           'aio/content/guide/zone.md'
           ])
@@ -1250,6 +1250,7 @@ groups:
           'packages/examples/test-utils/**',
           'packages/private/**',
           'packages/examples/*',
+          'packages/zone.js/package.json',
           'scripts/**',
           'third_party/**',
           'tools/build/**',

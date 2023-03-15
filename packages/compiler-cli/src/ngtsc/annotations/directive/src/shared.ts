@@ -76,8 +76,15 @@ export function extractDirectiveMetadata(
   // Construct the map of inputs both from the @Directive/@Component
   // decorator, and the decorated fields.
   const inputsFromMeta = parseInputsArray(directive, evaluator);
-  const inputsFromFields = parseInputFields(
+  let inputsFromFields = parseInputFields(
       filterToMembersWithDecorator(decoratedElements, 'Input', coreModule), evaluator);
+
+  // TODO(signals)
+  inputsFromFields = {
+    ...inputsFromFields,
+    ...findAndParseSignalInputs(reflector, evaluator, coreModule, members)
+  };
+
   const inputs = ClassPropertyMapping.fromMappedObject({...inputsFromMeta, ...inputsFromFields});
 
   // And outputs.
@@ -685,6 +692,47 @@ function evaluateHostExpressionBindings(
   }
 
   return bindings;
+}
+
+function findAndParseSignalInputs(
+    reflector: ReflectionHost, evaluator: PartialEvaluator, coreModule: string|undefined,
+    members: ClassMember[]): Record<string, InputMapping> {
+  const res: Record<string, InputMapping> = {};
+
+  for (const m of members) {
+    if (m.value === null) {
+      continue;
+    }
+    const value = unwrapExpression(m.value);
+    if (!ts.isCallExpression(value)) {
+      continue;
+    }
+    const callTarget = unwrapExpression(value.expression);
+    if (!ts.isIdentifier(callTarget)) {
+      continue;
+    }
+
+    const valueImport = reflector.getImportOfIdentifier(callTarget);
+    const refersToInput = valueImport !== null ?
+        valueImport.from === coreModule && valueImport.name === 'input' :
+        callTarget.text === 'input' && coreModule === undefined;
+
+    if (refersToInput) {
+      const inputOpts =
+          value.arguments.length === 2 ? evaluator.evaluate(value.arguments[1]) : null;
+
+      if (inputOpts !== null && !(inputOpts instanceof Map)) {
+        throw new Error('Input options are not an object..');
+      }
+
+      res[m.name] = {
+        classPropertyName: m.name,
+        bindingPropertyName: inputOpts?.get('alias')?.toString() /* TODO */ ?? m.name,
+        required: !!inputOpts?.get('required'),
+      }
+    }
+  }
+  return res;
 }
 
 /**

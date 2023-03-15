@@ -1,4 +1,4 @@
-import {Component, input} from '@angular/core';
+import {Component, Input, input} from '@angular/core';
 import {bootstrapApplication} from '@angular/platform-browser';
 
 @Component({
@@ -7,15 +7,20 @@ import {bootstrapApplication} from '@angular/platform-browser';
   signals: true,
   template: `{{ nameInput() }}`,
 })
-class Greet {
-    nameInput = input('Jeff');
+export class Greet {
+  nameInput = input<boolean|undefined>(undefined);
+  internalName = input(true, {alias: 'publicNameYay'});
+
+  // should break, but still supported early prototype.
+  @Input() oldInput: string|undefined;
 }
 
 @Component({
   standalone: true,
-  template: `Hello <greet [nameInput]="'Paul'" />`,
+  template: `Hello <greet [nameInput]="'A'" />`,
   imports: [Greet],
 })
-export class MyApp {}
+export class MyApp {
+}
 
 bootstrapApplication(MyApp).catch((e) => console.error(e));

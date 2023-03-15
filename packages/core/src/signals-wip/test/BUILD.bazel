@@ -1,0 +1,16 @@
+load("//tools:defaults.bzl", "ng_module")
+
+ng_module(
+    name = "test_lib",
+    srcs = ["index.ts"],
+    deps = [
+        "//packages/core",
+        "//packages/platform-browser",
+    ],
+)
+
+filegroup(
+    name = "test",
+    srcs = [":test_lib"],
+    output_group = "es5_sources",
+)

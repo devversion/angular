@@ -5,7 +5,7 @@ import {CommitMessageConfig} from '@angular/ng-dev';
  */
 export const commitMessage: CommitMessageConfig = {
   maxLineLength: Infinity,
-  minBodyLength: 20,
+  minBodyLength: 0,
   minBodyLengthTypeExcludes: ['docs'],
   scopes: [
     'animations',

@@ -6,6 +6,9 @@ on:
 
 permissions: read-all
 
+env:
+  GITHUB_REPOSITORY_OWNER: 'angular'
+
 jobs:
   benchmark-compare:
     runs-on: ubuntu-latest

@@ -11,15 +11,20 @@ import Zip from 'adm-zip';
 
 import type {JsonReport} from '../../packages/benchpress/src/reporter/json_file_reporter_types.js';
 
-export interface Result {
+export interface ScenarioResult {
   id: string;
   data: JsonReport;
   textSummary: string;
 }
 
-export function collectBenchmarkResults(testlogDir: string): Result[] {
+export interface OverallResult {
+  scenarios: ScenarioResult[];
+  textSummary: string;
+}
+
+export function collectBenchmarkResults(testlogDir: string): OverallResult {
   const z = new Zip(path.join(testlogDir, 'test.outputs/outputs.zip'));
-  const scenarioResults: Result[] = [];
+  const scenarioResults: ScenarioResult[] = [];
 
   for (const e of z.getEntries()) {
     if (path.extname(e.entryName) !== ".json") {
@@ -40,7 +45,10 @@ export function collectBenchmarkResults(testlogDir: string): Result[] {
     });
   }
 
-  return scenarioResults;
+  return {
+    scenarios: scenarioResults,
+    textSummary: scenarioResults.map(s => `### ${s.id}\n\n${s.textSummary}`).join('`\n'),
+  }
 }
 
 function isJsonReport(data: any): data is JsonReport {

@@ -7,11 +7,12 @@
  */
 
 import yargs from 'yargs';
-import {GitClient, green, Log} from '@angular/ng-dev';
+import {bold, GitClient, green, Log} from '@angular/ng-dev';
 import inquirer from 'inquirer';
 import {exec} from './utils.mjs';
 import {findBenchmarkTargets, getTestlogPath} from './targets.mjs';
 import { collectBenchmarkResults } from './results.mjs';
+import {setOutput} from '@actions/core';
 
 const benchmarkTestFlags = ['--test_output=streamed', '--cache_test_results=no'];
 
@@ -71,13 +72,27 @@ async function runCompare(bazelTarget: string | undefined, compareRef: string): 
     Log.log(green('Fetching comparison revision.'));
     git.run(['fetch', git.getRepoGitUrl(), compareRef]);
     Log.log(green('Checking out comparison revision.'));
-//    git.run(['checkout', compareRef]);
+    git.run(['checkout', compareRef]);
 
- //   await exec('yarn');
- //   await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
+    await exec('yarn');
+    await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
   } finally {
     restoreWorkingDirectory(git, initialRef);
   }
+
+  const comparisonResults = await collectBenchmarkResults(testlogPath);
+
+
+
+
+  setOutput('comparison-results-text', comparisonResults.textSummary);
+  setOutput('working-dir-results-text', workingDirResults.textSummary);
+
+  console.log(bold('Comparison results'), '\n');
+  console.log(comparisonResults.scenarios);
+
+  console.log(bold('Working directory results'), '\n');
+  console.log(workingDirResults.scenarios)
 }
 
 function restoreWorkingDirectory(git: GitClient, initialRef: string) {

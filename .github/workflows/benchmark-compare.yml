@@ -7,7 +7,7 @@ on:
 permissions: read-all
 
 jobs:
-  aio-build:
+  benchmark-compare:
     runs-on: ubuntu-latest
     # TODO
     if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/benchmark-compare ')}}
@@ -28,6 +28,10 @@ jobs:
           ref: ${{ steps.comment-branch.outputs.head_ref }}
 
       - uses: ./.github/actions/yarn-install
+
+      - uses: angular/dev-infra/github-actions/setup-bazel-remote-exec@5f06c4774df908ed69e1441f4ec63b898acf0c68
+        with:
+          bazelrc: ./.bazelrc.user
 
       - run: yarn benchmarks run-compare fc83d8471b201cbfe96ba7b9a53fafde77d4d116 //modules/benchmarks/src/expanding_rows:perf
         name: Running benchmark

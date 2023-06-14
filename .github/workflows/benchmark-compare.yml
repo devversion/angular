@@ -33,5 +33,5 @@ jobs:
         with:
           bazelrc: ./.bazelrc.user
 
-      - run: yarn benchmarks run-compare fc83d8471b201cbfe96ba7b9a53fafde77d4d116 //modules/benchmarks/src/expanding_rows:perf
+      - run: yarn benchmarks run-compare main //modules/benchmarks/src/expanding_rows:perf
         name: Running benchmark

@@ -14,7 +14,7 @@ import {ResolvedTarget, findBenchmarkTargets, getTestlogPath, resolveTarget} fro
 import {collectBenchmarkResults} from './results.mjs';
 import {setOutput} from '@actions/core';
 
-const benchmarkTestFlags = ['--test_output=streamed', '--cache_test_results=no', '--color=yes', '--curses=no'];
+const benchmarkTestFlags = ['--cache_test_results=no', '--color=yes', '--curses=no'];
 
 await yargs(process.argv.slice(2))
   .command(

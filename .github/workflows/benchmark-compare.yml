@@ -15,6 +15,7 @@ jobs:
       - uses: TheModdingInquisition/actions-team-membership@v1.0
         with:
           team: 'team'
+          organization: angular
           token: ${{secrets.ANGULAR_ROBOT_ACCESS_TOKEN}}
           exit: true
 

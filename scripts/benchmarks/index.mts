@@ -7,11 +7,11 @@
  */
 
 import yargs from 'yargs';
-import {bold, GitClient, green, Log} from '@angular/ng-dev';
+import {bold,yellow, GitClient, green, Log} from '@angular/ng-dev';
 import inquirer from 'inquirer';
 import {exec} from './utils.mjs';
 import {findBenchmarkTargets, getTestlogPath} from './targets.mjs';
-import { collectBenchmarkResults } from './results.mjs';
+import {collectBenchmarkResults} from './results.mjs';
 import {setOutput} from '@actions/core';
 
 const benchmarkTestFlags = ['--test_output=streamed', '--cache_test_results=no'];
@@ -42,7 +42,7 @@ async function runCompare(bazelTarget: string | undefined, compareRef: string): 
     bazelTarget = (
       await inquirer.prompt<{bazelTarget: string}>({
         name: 'bazelTarget',
-        message: "Select benchmark target to run:",
+        message: 'Select benchmark target to run:',
         type: 'list',
         choices: targets.map((t) => ({value: t, name: t})),
       })
@@ -57,7 +57,7 @@ async function runCompare(bazelTarget: string | undefined, compareRef: string): 
   }
 
   const testlogPath = await getTestlogPath(bazelTarget);
-  Log.log(green('Test log path:', testlogPath))
+  Log.log(green('Test log path:', testlogPath));
 
   // Run benchmark with the current working directory.
   await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
@@ -80,19 +80,24 @@ async function runCompare(bazelTarget: string | undefined, compareRef: string): 
     restoreWorkingDirectory(git, initialRef);
   }
 
+  // Re-install dependencies for `HEAD`.
+  await exec('yarn');
+
   const comparisonResults = await collectBenchmarkResults(testlogPath);
 
+  if (process.env.GITHUB_ACTION !== undefined) {
+    setOutput('comparison-results-text', comparisonResults.textSummary);
+    setOutput('working-dir-results-text', workingDirResults.textSummary);
+  }
 
+  console.log('\n\n\n');
+  console.log(green(bold('Results!')));
 
+  console.log(bold(yellow('Comparison results')), '\n');
+  console.log(comparisonResults.textSummary);
 
-  setOutput('comparison-results-text', comparisonResults.textSummary);
-  setOutput('working-dir-results-text', workingDirResults.textSummary);
-
-  console.log(bold('Comparison results'), '\n');
-  console.log(comparisonResults.scenarios);
-
-  console.log(bold('Working directory results'), '\n');
-  console.log(workingDirResults.scenarios)
+  console.log(bold(yellow('Working directory results')), '\n');
+  console.log(workingDirResults.textSummary);
 }
 
 function restoreWorkingDirectory(git: GitClient, initialRef: string) {

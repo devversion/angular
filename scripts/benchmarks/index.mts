@@ -119,5 +119,7 @@ async function runCompare(bazelTargetRaw: string | undefined, compareRef: string
 function restoreWorkingDirectory(git: GitClient, initialRef: string) {
   Log.log(green('Restoring working directory'));
   git.run(['checkout', '-f', initialRef]);
-  git.run(['stash', 'apply']);
+
+  // Stash apply could fail if there were not changes in the working dir.
+  git.runGraceful(['stash', 'apply']);
 }

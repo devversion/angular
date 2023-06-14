@@ -13,6 +13,9 @@ import {MeasureValues} from '../measure_values';
 import {Reporter} from '../reporter';
 import {SampleDescription} from '../sample_description';
 
+import {ConsoleReporter} from './console_reporter';
+import {JsonReport} from './json_file_reporter_types';
+import {TextReporterBase} from './text_reporter_base';
 import {formatStats, sortedProps} from './util';
 
 
@@ -33,9 +36,11 @@ export class JsonFileReporter extends Reporter {
   constructor(
       private _description: SampleDescription, @Inject(JsonFileReporter.PATH) private _path: string,
       @Inject(Options.WRITE_FILE) private _writeFile: Function,
-      @Inject(Options.NOW) private _now: Function) {
+      @Inject(Options.NOW) private _now: Function, private _consoleReporter: ConsoleReporter) {
     super();
   }
+
+  private textReporter = new TextReporterBase(18, this._description);
 
   override reportMeasureValues(measureValues: MeasureValues): Promise<any> {
     return Promise.resolve(null);
@@ -48,9 +53,12 @@ export class JsonFileReporter extends Reporter {
       stats[metricName] = formatStats(validSample, metricName);
     });
     const content = JSON.stringify(
-        {
+        <JsonReport>{
           'description': this._description,
+          'metricsText': this.textReporter.metricsHeader(),
           'stats': stats,
+          'statsText': this.textReporter.sampleStats(validSample),
+          'validSampleTexts': validSample.map(s => this.textReporter.sampleMetrics(s)),
           'completeSample': completeSample,
           'validSample': validSample,
         },

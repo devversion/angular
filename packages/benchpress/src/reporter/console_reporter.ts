@@ -7,12 +7,12 @@
  */
 
 import {Inject, Injectable, InjectionToken} from '@angular/core';
+
 import {MeasureValues} from '../measure_values';
 import {Reporter} from '../reporter';
 import {SampleDescription} from '../sample_description';
 
-import {formatNum, formatStats, sortedProps} from './util';
-
+import {TextReporterBase} from './text_reporter_base';
 
 /**
  * A reporter for the console
@@ -36,60 +36,25 @@ export class ConsoleReporter extends Reporter {
     }
   ];
 
-  private static _lpad(value: string, columnWidth: number, fill = ' ') {
-    let result = '';
-    for (let i = 0; i < columnWidth - value.length; i++) {
-      result += fill;
-    }
-    return result + value;
-  }
-
-  private _metricNames: string[];
+  private textReporter = new TextReporterBase(this._columnWidth, this._sampleDescription);
 
   constructor(
       @Inject(ConsoleReporter.COLUMN_WIDTH) private _columnWidth: number,
-      sampleDescription: SampleDescription,
+      private _sampleDescription: SampleDescription,
       @Inject(ConsoleReporter.PRINT) private _print: Function) {
     super();
-    this._metricNames = sortedProps(sampleDescription.metrics);
-    this._printDescription(sampleDescription);
-  }
-
-  private _printDescription(sampleDescription: SampleDescription) {
-    this._print(`BENCHMARK ${sampleDescription.id}`);
-    this._print('Description:');
-    const props = sortedProps(sampleDescription.description);
-    props.forEach((prop) => {
-      this._print(`- ${prop}: ${sampleDescription.description[prop]}`);
-    });
-    this._print('Metrics:');
-    this._metricNames.forEach((metricName) => {
-      this._print(`- ${metricName}: ${sampleDescription.metrics[metricName]}`);
-    });
-    this._print('');
-    this._printStringRow(this._metricNames);
-    this._printStringRow(this._metricNames.map((_) => ''), '-');
+    this._print(this.textReporter.description());
   }
 
   override reportMeasureValues(measureValues: MeasureValues): Promise<any> {
-    const formattedValues = this._metricNames.map(metricName => {
-      const value = measureValues.values[metricName];
-      return formatNum(value);
-    });
-    this._printStringRow(formattedValues);
+    this._print(this.textReporter.sampleMetrics(measureValues));
     return Promise.resolve(null);
   }
 
-  override reportSample(completeSample: MeasureValues[], validSamples: MeasureValues[]):
+  override reportSample(_completeSample: MeasureValues[], validSamples: MeasureValues[]):
       Promise<any> {
-    this._printStringRow(this._metricNames.map((_) => ''), '=');
-    this._printStringRow(
-        this._metricNames.map(metricName => formatStats(validSamples, metricName)));
+    this._print(this.textReporter.separator());
+    this._print(this.textReporter.sampleStats(validSamples));
     return Promise.resolve(null);
-  }
-
-  private _printStringRow(parts: any[], fill = ' ') {
-    this._print(
-        parts.map(part => ConsoleReporter._lpad(part, this._columnWidth, fill)).join(' | '));
   }
 }

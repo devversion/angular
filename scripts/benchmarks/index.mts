@@ -7,24 +7,30 @@
  */
 
 import yargs from 'yargs';
-import {bold,yellow, GitClient, green, Log} from '@angular/ng-dev';
+import {bold, yellow, GitClient, green, Log} from '@angular/ng-dev';
 import inquirer from 'inquirer';
 import {exec} from './utils.mjs';
-import {findBenchmarkTargets, getTestlogPath} from './targets.mjs';
+import {ResolvedTarget, findBenchmarkTargets, getTestlogPath, resolveTarget} from './targets.mjs';
 import {collectBenchmarkResults} from './results.mjs';
 import {setOutput} from '@actions/core';
 
-const benchmarkTestFlags = ['--test_output=streamed', '--cache_test_results=no'];
+const benchmarkTestFlags = ['--test_output=streamed', '--cache_test_results=no', '--color=yes', '--curses=no'];
 
 await yargs(process.argv.slice(2))
   .command(
     'run-compare <compare-ref> [bazel-target]',
-    'Runs a benchmark Bazel target between two SHAs',
+    'Runs a benchmark between two SHAs',
     (argv) =>
       argv
         .option('compare-ref', {description: 'Comparison SHA', string: true, demandOption: true})
-        .option('bazel-target', {descripton: 'Bazel target', string: true}),
+        .option('bazel-target', {description: 'Bazel target', string: true}),
     (args) => runCompare(args.bazelTarget, args.compareRef)
+  )
+  .command(
+    'run [bazel-target]',
+    'Runs a benchmark',
+    (argv) => argv.option('bazel-target', {description: 'Bazel target', string: true}),
+    (args) => runBenchmarkCmd(args.bazelTarget)
   )
   .demandCommand()
   .scriptName('$0')
@@ -32,35 +38,45 @@ await yargs(process.argv.slice(2))
   .strict()
   .parseAsync();
 
-async function runCompare(bazelTarget: string | undefined, compareRef: string): Promise<void> {
+async function promptForBenchmarkTarget(): Promise<string> {
+  const targets = await findBenchmarkTargets();
+
+  return (
+    await inquirer.prompt<{bazelTarget: string}>({
+      name: 'bazelTarget',
+      message: 'Select benchmark target to run:',
+      type: 'list',
+      choices: targets.map((t) => ({value: t, name: t})),
+    })
+  ).bazelTarget;
+}
+
+async function runBenchmarkCmd(bazelTargetRaw: string|undefined): Promise<void> {
+  if (bazelTargetRaw === undefined) {
+    bazelTargetRaw = await promptForBenchmarkTarget();
+  }
+  await runBenchmarkTarget(await resolveTarget(bazelTargetRaw))
+}
+
+async function runBenchmarkTarget(bazelTarget: ResolvedTarget): Promise<void> {
+  await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
+}
+
+async function runCompare(bazelTargetRaw: string | undefined, compareRef: string): Promise<void> {
   const git = await GitClient.get();
   const initialRef = git.getCurrentBranchOrRevision();
 
-  if (bazelTarget === undefined) {
-    const targets = await findBenchmarkTargets();
-
-    bazelTarget = (
-      await inquirer.prompt<{bazelTarget: string}>({
-        name: 'bazelTarget',
-        message: 'Select benchmark target to run:',
-        type: 'list',
-        choices: targets.map((t) => ({value: t, name: t})),
-      })
-    ).bazelTarget;
+  if (bazelTargetRaw === undefined) {
+    bazelTargetRaw = await promptForBenchmarkTarget();
   }
 
-  // If the target does not specify an explicit browser test target, we attempt
-  // to automatically add the Chromium suffix. This is necessary for e.g.
-  // resolving testlogs which would reside under the actual test target.
-  if (!bazelTarget.endsWith('_chromium')) {
-    bazelTarget = `${bazelTarget}_chromium`;
-  }
-
+  const bazelTarget = await resolveTarget(bazelTargetRaw);
   const testlogPath = await getTestlogPath(bazelTarget);
+
   Log.log(green('Test log path:', testlogPath));
 
   // Run benchmark with the current working directory.
-  await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
+  await runBenchmarkTarget(bazelTarget);
 
   const workingDirResults = await collectBenchmarkResults(testlogPath);
 
@@ -75,7 +91,7 @@ async function runCompare(bazelTarget: string | undefined, compareRef: string): 
     git.run(['checkout', compareRef]);
 
     await exec('yarn');
-    await exec('bazel', ['test', bazelTarget, ...benchmarkTestFlags]);
+    await runBenchmarkTarget(bazelTarget);
   } finally {
     restoreWorkingDirectory(git, initialRef);
   }

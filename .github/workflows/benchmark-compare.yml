@@ -1,0 +1,25 @@
+name: Run benchmark comparison
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions: read-all
+
+jobs:
+  aio-build:
+    runs-on: ubuntu-latest
+    # TODO
+    if: ${{ github.event.issue.pull_request && startsWith(github.event.comment.body, '/benchmark-compare ')}}
+    steps:
+      - uses: TheModdingInquisition/actions-team-membership@v1.0
+        with:
+          team: 'team'
+          token: ${{secrets.ANGULAR_ROBOT_ACCESS_TOKEN}}
+          exit: true
+
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+      - uses: ./.github/actions/yarn-install
+
+      - run: yarn benchmarks run-compare fc83d8471b201cbfe96ba7b9a53fafde77d4d116 //modules/benchmarks/src/expanding_rows:perf
+        name: Running benchmark

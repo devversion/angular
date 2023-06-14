@@ -18,7 +18,14 @@ jobs:
           token: ${{secrets.ANGULAR_ROBOT_ACCESS_TOKEN}}
           exit: true
 
+      - uses: xt0rted/pull-request-comment-branch@v2
+        id: comment-branch
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
+        with:
+          # Checkout the pull request and assume it being trusted given we've checked
+          # that the action was triggered by a team member.
+          ref: ${{ steps.comment-branch.outputs.head_ref }}
+
       - uses: ./.github/actions/yarn-install
 
       - run: yarn benchmarks run-compare fc83d8471b201cbfe96ba7b9a53fafde77d4d116 //modules/benchmarks/src/expanding_rows:perf

@@ -14,7 +14,15 @@ import {ResolvedTarget, findBenchmarkTargets, getTestlogPath, resolveTarget} fro
 import {collectBenchmarkResults} from './results.mjs';
 import {setOutput} from '@actions/core';
 
-const benchmarkTestFlags = ['--cache_test_results=no', '--color=yes', '--curses=no'];
+const benchmarkTestFlags = [
+  '--cache_test_results=no',
+  '--color=yes',
+  '--curses=no',
+  // We may have RBE set up, but test should run locally on the same machine to
+  // reduce fluctuation. Output streamed ensures that deps can build with RBE, but
+  // tests run locally while also providing useful for debugging.
+  '--test_output=streamed',
+];
 
 await yargs(process.argv.slice(2))
   .command(
@@ -36,8 +44,7 @@ await yargs(process.argv.slice(2))
     'extract-compare-comment <comment-body>',
     false, // Do not show in help.
     (argv) => argv.positional('comment-body', {demandOption: true, type: 'string'}),
-    args => extractCompareComment(args.commentBody),
-
+    (args) => extractCompareComment(args.commentBody)
   )
   .demandCommand()
   .scriptName('$0')

@@ -17,7 +17,7 @@ export const projectDir = path.join(scriptDir, '../..');
 
 export function exec(cmd: string, args: string[] = []): Promise<string> {
   return new Promise((resolve, reject) => {
-    Log.info('Running command: ', cmd, args.join(' '))
+    Log.info('Running command:', cmd, args.join(' '))
 
     const proc = childProcess.spawn(cmd, args, {
       shell: true,

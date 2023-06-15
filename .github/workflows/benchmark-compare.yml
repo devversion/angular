@@ -61,6 +61,11 @@ jobs:
         id: info
         run: yarn benchmarks extract-compare-comment "${{github.event.comment.body}}"
 
+      - name: Resolving current PR SHA
+        id: pr-head
+        run: |
+          echo "sha=$(git rev-parse ${{steps.comment-branch.outputs.head_ref}})" >> "$GITHUB_OUTPUT"
+
       - run: yarn benchmarks run-compare ${{steps.info.outputs.compareRef}} ${{steps.info.outputs.benchmarkTarget}}
         id: benchmark
         name: Running benchmark
@@ -71,7 +76,7 @@ jobs:
             ## Benchmark Test Results
             **Test**: `${{steps.info.outputs.benchmarkTarget}}`
 
-            ### PR (${{steps.comment-branch.outputs.head_ref}})
+            ### PR (${{steps.pr-head.outputs.sha}})
             ${{steps.benchmark.outputs.workingDirResultsText}}
 
             ### Compare Ref (${{steps.info.outputs.compareRef}})

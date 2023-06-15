@@ -21,6 +21,13 @@ jobs:
           token: ${{secrets.ANGULAR_ROBOT_ACCESS_TOKEN}}
           exit: true
 
+      # Indicate that the benchmark command was received.
+      - uses: peter-evans/create-or-update-comment@v3
+        with:
+          comment-id: ${{github.event.comment.id}}
+          token: '${{secrets.GITHUB_TOKEN}}'
+          reactions: 'rocket'
+
       - uses: xt0rted/pull-request-comment-branch@v2
         id: comment-branch
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
@@ -70,9 +77,11 @@ jobs:
         id: benchmark
         name: Running benchmark
 
-      - uses: marocchino/sticky-pull-request-comment@f61b6cf21ef2fcc468f4345cdfcc9bda741d2343 # v2
+      - uses: peter-evans/create-or-update-comment@v3
         with:
-          message: |
+          issue-number: ${{github.event.issue.number}}
+          token: '${{secrets.GITHUB_TOKEN}}'
+          body: |
             ## Benchmark Test Results
             **Test**: `${{steps.info.outputs.benchmarkTarget}}`
 
@@ -81,6 +90,4 @@ jobs:
 
             ### Compare Ref (${{steps.info.outputs.compareRef}})
             ${{steps.benchmark.outputs.comparisonResultsText}}
-          append: true
-          number: ${{github.event.issue.number}}
-          GITHUB_TOKEN: '${{secrets.GITHUB_TOKEN}}'
+          reactions: '+1'

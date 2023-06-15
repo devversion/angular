@@ -4,7 +4,9 @@ on:
   issue_comment:
     types: [created]
 
-permissions: read-all
+permissions:
+  # Needed in order to be able to comment on the pull request.
+  pull-requests: write
 
 jobs:
   benchmark-compare:
@@ -25,7 +27,7 @@ jobs:
         with:
           # Checkout the pull request and assume it being trusted given we've checked
           # that the action was triggered by a team member.
-          ref: ${{ steps.comment-branch.outputs.head_ref }}
+          ref: ${{steps.comment-branch.outputs.head_ref}}
 
       - uses: ./.github/actions/yarn-install
 
@@ -55,5 +57,25 @@ jobs:
           NGAT: 'qoDjQodnm6t97MfFcj7x+g=='
           BAZELRC_PATH: ./.bazelrc.user
 
-      - run: yarn benchmarks run-compare main //modules/benchmarks/src/expanding_rows:perf
+      - name: Extracting comment information
+        id: info
+        run: yarn benchmarks extract-compare-comment "${{github.event.comment.body}}"
+
+      - run: yarn benchmarks run-compare ${{steps.info.outputs.compareRef}} ${{steps.info.outputs.benchmarkTarget}}
+        id: benchmark
         name: Running benchmark
+
+      - uses: marocchino/sticky-pull-request-comment@f61b6cf21ef2fcc468f4345cdfcc9bda741d2343 # v2
+        with:
+          message: |
+            ## Benchmark Test Results
+            **Test**: `${{steps.info.outputs.benchmarkTarget}}`
+
+            ### PR (${{steps.comment-branch.outputs.head_ref}})
+            ${{steps.benchmark.outputs.workingDirResultsText}}
+
+            ### Compare Ref (${{steps.info.outputs.compareRef}})
+            ${{steps.benchmark.outputs.comparisonResultsText}}
+          append: true
+          number: ${{github.event.issue.number}}
+          GITHUB_TOKEN: '${{secrets.GITHUB_TOKEN}}'

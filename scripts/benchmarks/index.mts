@@ -22,15 +22,22 @@ await yargs(process.argv.slice(2))
     'Runs a benchmark between two SHAs',
     (argv) =>
       argv
-        .option('compare-ref', {description: 'Comparison SHA', string: true, demandOption: true})
-        .option('bazel-target', {description: 'Bazel target', string: true}),
+        .option('compare-ref', {description: 'Comparison SHA', type: 'string', demandOption: true})
+        .option('bazel-target', {description: 'Bazel target', type: 'string'}),
     (args) => runCompare(args.bazelTarget, args.compareRef)
   )
   .command(
     'run [bazel-target]',
     'Runs a benchmark',
-    (argv) => argv.option('bazel-target', {description: 'Bazel target', string: true}),
+    (argv) => argv.option('bazel-target', {description: 'Bazel target', type: 'string'}),
     (args) => runBenchmarkCmd(args.bazelTarget)
+  )
+  .command(
+    'extract-compare-comment <comment-body>',
+    false, // Do not show in help.
+    (argv) => argv.positional('comment-body', {demandOption: true, type: 'string'}),
+    args => extractCompareComment(args.commentBody),
+
   )
   .demandCommand()
   .scriptName('$0')
@@ -51,11 +58,22 @@ async function promptForBenchmarkTarget(): Promise<string> {
   ).bazelTarget;
 }
 
-async function runBenchmarkCmd(bazelTargetRaw: string|undefined): Promise<void> {
+async function extractCompareComment(commentBody: string): Promise<void> {
+  const matches = /\/[^ ]+ ([^ ]+) ([^ ]+)/.exec(commentBody);
+  if (matches === null) {
+    Log.error('Could not extract information from comment', commentBody);
+    process.exit(1);
+  }
+
+  setOutput('compareRef', matches[1]);
+  setOutput('benchmarkTarget', matches[2]);
+}
+
+async function runBenchmarkCmd(bazelTargetRaw: string | undefined): Promise<void> {
   if (bazelTargetRaw === undefined) {
     bazelTargetRaw = await promptForBenchmarkTarget();
   }
-  await runBenchmarkTarget(await resolveTarget(bazelTargetRaw))
+  await runBenchmarkTarget(await resolveTarget(bazelTargetRaw));
 }
 
 async function runBenchmarkTarget(bazelTarget: ResolvedTarget): Promise<void> {
@@ -88,7 +106,7 @@ async function runCompare(bazelTargetRaw: string | undefined, compareRef: string
     Log.log(green('Fetching comparison revision.'));
     git.run(['fetch', git.getRepoGitUrl(), compareRef]);
     Log.log(green('Checking out comparison revision.'));
-    git.run(['checkout', compareRef]);
+    git.run(['checkout', 'FETCH_HEAD']);
 
     await exec('yarn');
     await runBenchmarkTarget(bazelTarget);
@@ -102,8 +120,8 @@ async function runCompare(bazelTargetRaw: string | undefined, compareRef: string
   const comparisonResults = await collectBenchmarkResults(testlogPath);
 
   if (process.env.GITHUB_ACTION !== undefined) {
-    setOutput('comparison-results-text', comparisonResults.textSummary);
-    setOutput('working-dir-results-text', workingDirResults.textSummary);
+    setOutput('comparisonResultsText', comparisonResults.textSummary);
+    setOutput('workingDirResultsText', workingDirResults.textSummary);
   }
 
   console.log('\n\n\n');

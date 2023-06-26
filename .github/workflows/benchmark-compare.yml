@@ -48,7 +48,7 @@ jobs:
         id: info
         run: yarn benchmarks prepare-for-github-action "${{github.event.comment.body}}"
 
-      - run: yarn benchmarks run-compare ${{steps.info.outputs.compareSha}} ${{steps.info.outputs.benchmarkTarget}}
+      - run: yarn benchmarks run-compare --wipe-node-modules ${{steps.info.outputs.compareSha}} ${{steps.info.outputs.benchmarkTarget}}
         id: benchmark
         name: Running benchmark
 

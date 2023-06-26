@@ -6,13 +6,15 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import fs from 'fs';
 import yargs from 'yargs';
 import {bold, yellow, GitClient, green, Log} from '@angular/ng-dev';
 import inquirer from 'inquirer';
-import {exec} from './utils.mjs';
+import {exec, projectDir} from './utils.mjs';
 import {ResolvedTarget, findBenchmarkTargets, getTestlogPath, resolveTarget} from './targets.mjs';
 import {collectBenchmarkResults} from './results.mjs';
 import {setOutput} from '@actions/core';
+import path from 'path';
 
 const benchmarkTestFlags = [
   '--cache_test_results=no',
@@ -35,8 +37,14 @@ await yargs(process.argv.slice(2))
           type: 'string',
           demandOption: true,
         })
+        .option('wipe-node-modules', {
+          description: 'Wipe full node modules when running Yarn',
+          demandOption: false,
+          type: 'boolean',
+          default: false,
+        })
         .positional('bazel-target', {description: 'Bazel target', type: 'string'}),
-    (args) => runCompare(args.bazelTarget, args.compareRef)
+    (args) => runCompare(args.bazelTarget, args.compareRef, args.wipeNodeModules)
   )
   .command(
     'run [bazel-target]',
@@ -133,7 +141,11 @@ async function runBenchmarkTarget(bazelTarget: ResolvedTarget): Promise<void> {
  * Performs a comparison of benchmark results between the current
  * working stage and the comparison Git reference.
  */
-async function runCompare(bazelTargetRaw: string | undefined, compareRef: string): Promise<void> {
+async function runCompare(
+  bazelTargetRaw: string | undefined,
+  compareRef: string,
+  wipeNodeModules: boolean
+): Promise<void> {
   const git = await GitClient.get();
   const initialRef = git.getCurrentBranchOrRevision();
 
@@ -168,14 +180,14 @@ async function runCompare(bazelTargetRaw: string | undefined, compareRef: string
     Log.log(green('Checking out comparison revision.'));
     git.run(['checkout', 'FETCH_HEAD']);
 
-    await exec('yarn');
+    await yarnInstall(wipeNodeModules);
     await runBenchmarkTarget(bazelTarget);
   } finally {
     restoreWorkingStage(git, initialRef);
   }
 
   // Re-install dependencies for `HEAD`.
-  await exec('yarn');
+  await yarnInstall(wipeNodeModules);
 
   const comparisonResults = await collectBenchmarkResults(testlogPath);
 
@@ -202,4 +214,22 @@ function restoreWorkingStage(git: GitClient, initialRef: string) {
 
   // Stash apply could fail if there were not changes in the working stage.
   git.runGraceful(['stash', 'apply']);
+}
+
+async function yarnInstall(wipeNodeModules: boolean) {
+  if (wipeNodeModules) {
+    // Note: We delete all contents of the `node_modules` first. This is necessary
+    // because Yarn could preserve extraneous/outdated nested modules that will cause
+    // unexpected build failures with the NodeJS Bazel `@npm` workspace generation.
+    // This is a workaround for: https://github.com/yarnpkg/yarn/issues/8146. Even though
+    // we might be able to fix this with Yarn 2+, it is reasonable ensuring clean node modules.
+    // TODO: Remove this when we use Yarn 2+/pnpm in all Angular repositories.
+    await fs.promises.rm(path.join(projectDir, 'node_modules'), {
+      force: true,
+      recursive: true,
+      maxRetries: 3,
+    });
+  }
+
+  await exec('yarn');
 }

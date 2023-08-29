@@ -8,23 +8,23 @@
 
 import * as o from '../../../../output/output_ast';
 import * as ir from '../../ir';
-import type {ComponentCompilationJob, ViewCompilationUnit} from '../compilation';
+import type {CompilationJob, CompilationUnit} from '../compilation';
 
 /**
  * Moves variables defined in creation mode to only be initialized after their creation, splitting
  * declaration and initialization if necessary to allow forward references.
  */
-export function phaseCreationVarColocation(cpl: ComponentCompilationJob): void {
-  for (const view of cpl.views.values()) {
-    processView(view);
+export function phaseCreationVarColocation(cpl: CompilationJob): void {
+  for (const unit of cpl.units) {
+    processUnit(unit);
   }
 }
 
-function processView(view: ViewCompilationUnit): void {
+function processUnit(unit: CompilationUnit): void {
   const shallowDeclarations = new Map<ir.XrefId, ir.VariableOp<ir.CreateOp>[]>();
   const seenVariableReads = new Set<ir.XrefId>;
   let shallow = true;
-  for (const op of view.create) {
+  for (const op of unit.create) {
     if (shallow && op.kind === ir.OpKind.Variable &&
         op.variable.kind === ir.SemanticVariableKind.Identifier && op.variable.target !== null) {
       // This variable represents the identity of an entity within the current view (shallow) which

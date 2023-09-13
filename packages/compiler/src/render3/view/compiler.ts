@@ -605,7 +605,7 @@ function createHostBindingsFunction(
           events: eventBindings,
           attributes: hostBindingsMetadata.attributes,
         },
-        bindingParser, constantPool);
+        constantPool);
     transform(hostJob, CompilationJobKind.Host);
 
     definitionMap.set('hostAttrs', hostJob.root.attributes);

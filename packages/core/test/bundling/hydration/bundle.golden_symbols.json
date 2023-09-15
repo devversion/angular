@@ -471,6 +471,9 @@
     "name": "SwitchMapSubscriber"
   },
   {
+    "name": "TEMPLATE_ID"
+  },
+  {
     "name": "TESTABILITY"
   },
   {
@@ -558,6 +561,9 @@
     "name": "_platformInjector"
   },
   {
+    "name": "_populateDehydratedViewsInLContainer"
+  },
+  {
     "name": "_processI18nInsertBefore"
   },
   {
@@ -574,6 +580,9 @@
   },
   {
     "name": "addPropertyAlias"
+  },
+  {
+    "name": "addToViewTree"
   },
   {
     "name": "allocExpando"
@@ -675,6 +684,9 @@
     "name": "convertToBitFlags"
   },
   {
+    "name": "createAnchorNode"
+  },
+  {
     "name": "createElementNode"
   },
   {
@@ -714,7 +726,13 @@
     "name": "defaultErrorFactory"
   },
   {
+    "name": "destroyLView"
+  },
+  {
     "name": "detachMovedView"
+  },
+  {
+    "name": "detachView"
   },
   {
     "name": "detectChangesInChildComponents"
@@ -744,9 +762,6 @@
     "name": "empty3"
   },
   {
-    "name": "enableHydrationRuntimeSupport"
-  },
-  {
     "name": "enterDI"
   },
   {
@@ -769,6 +784,9 @@
   },
   {
     "name": "extractDirectiveDef"
+  },
+  {
+    "name": "findMatchingDehydratedViewImpl"
   },
   {
     "name": "first"
@@ -927,6 +945,9 @@
     "name": "hasInSkipHydrationBlockFlag"
   },
   {
+    "name": "hasParentInjector"
+  },
+  {
     "name": "hasSkipHydrationAttrOnRElement"
   },
   {
@@ -1078,6 +1099,9 @@
   },
   {
     "name": "locateNextRNode"
+  },
+  {
+    "name": "locateOrCreateAnchorNode"
   },
   {
     "name": "locateOrCreateTextNodeImpl"
@@ -1323,6 +1347,9 @@
     "name": "unwrapRNode"
   },
   {
+    "name": "updateAncestorTraversalFlagsOnAttach"
+  },
+  {
     "name": "updateMicroTaskStatus"
   },
   {
@@ -1339,6 +1366,9 @@
   },
   {
     "name": "whenStableStore"
+  },
+  {
+    "name": "withDomHydration"
   },
   {
     "name": "writeDirectClass"

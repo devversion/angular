@@ -846,6 +846,9 @@
     "name": "convertToBitFlags"
   },
   {
+    "name": "createContainerRef"
+  },
+  {
     "name": "createDirectivesInstances"
   },
   {
@@ -880,6 +883,9 @@
   },
   {
     "name": "createTView"
+  },
+  {
+    "name": "createTemplateRef"
   },
   {
     "name": "currentConsumer"

@@ -279,7 +279,7 @@ export function executeTemplate<T>(
       templateFn(rf, context);
 
       // Flush remaining virtual instructions.
-      if (tView.virtualUpdate) {
+      if (isUpdatePhase && tView.virtualUpdate) {
         for (let idx = getVirtualInstructionIndex(); idx < tView.virtualUpdate.length; idx++) {
           tView.virtualUpdate[idx].instruction();
         }

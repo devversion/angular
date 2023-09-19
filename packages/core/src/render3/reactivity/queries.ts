@@ -25,40 +25,45 @@ export interface QuerySignalNode<T> extends ReactiveNode {
   bindToQuery(node: this, queryIndex: number): void;
 }
 
-export const QUERY_SIGNAL_NODE: QuerySignalNode<unknown> = {
-  ...REACTIVE_NODE,
+// Note: Using an IIFE here to ensure that the spread assignment is not considered
+// a side-effect, ending up preserving `COMPUTED_NODE` and `REACTIVE_NODE`.
+// TODO: remove when https://github.com/evanw/esbuild/issues/3392 is resolved.
+export const QUERY_SIGNAL_NODE: QuerySignalNode<unknown> = /* @__PURE__ */ (() => {
+  return {
+    ...REACTIVE_NODE,
 
-  // Base reactive node.overrides
-  producerMustRecompute: (node: QuerySignalNode<unknown>) => {
-    return !!node._queryList?.dirty;
-  },
+    // Base reactive node.overrides
+    producerMustRecompute: (node: QuerySignalNode<unknown>) => {
+      return !!node._queryList?.dirty;
+    },
 
-  producerRecomputeValue: (node: QuerySignalNode<unknown>) => {
-    // The current value is stale. Check whether we need to produce a new one.
-    // TODO: assert: I've got both the lView and queryIndex stored
-    if (queryRefreshInternal(node._lView!, node._queryIndex!)) {
-      node.version++;
-    }
-  },
+    producerRecomputeValue: (node: QuerySignalNode<unknown>) => {
+      // The current value is stale. Check whether we need to produce a new one.
+      // TODO: assert: I've got both the lView and queryIndex stored
+      if (queryRefreshInternal(node._lView!, node._queryIndex!)) {
+        node.version++;
+      }
+    },
 
-  // Query-specific implementations.
-  bindToQuery: (node: QuerySignalNode<unknown>, queryIndex: number) => {
-    // TODO: assert: should bind only once, make sure it is not re-assigned again
-    node._lView = getLView();
-    node._queryIndex = queryIndex;
-    node._queryList = loadQueryInternal(node._lView, queryIndex);
+    // Query-specific implementations.
+    bindToQuery: (node: QuerySignalNode<unknown>, queryIndex: number) => {
+      // TODO: assert: should bind only once, make sure it is not re-assigned again
+      node._lView = getLView();
+      node._queryIndex = queryIndex;
+      node._queryList = loadQueryInternal(node._lView, queryIndex);
 
-    node._queryList.onDirty(() => {
-      console.error('Dirty');
-      // Mark this producer as dirty and notify live consumer about the potential change. Note
-      // that the onDirty callback will fire only on the initial dirty marking (that is,
-      // subsequent dirty notifications are not fired- until the QueryList becomes clean again).
-      consumerMarkDirty(node);
-    });
-  },
+      node._queryList.onDirty(() => {
+        console.error('Dirty');
+        // Mark this producer as dirty and notify live consumer about the potential change. Note
+        // that the onDirty callback will fire only on the initial dirty marking (that is,
+        // subsequent dirty notifications are not fired- until the QueryList becomes clean again).
+        consumerMarkDirty(node);
+      });
+    },
 
-  // TODO(signals): Unsubscribe - destroy?
-};
+    // TODO(signals): Unsubscribe - destroy?
+  };
+})();
 
 function querySignalFnFirst<T>(): Signal<T|undefined> {
   const node: QuerySignalNode<T> = Object.create(QUERY_SIGNAL_NODE);

@@ -396,12 +396,6 @@
     "name": "R3Injector"
   },
   {
-    "name": "R3TemplateRef"
-  },
-  {
-    "name": "R3ViewContainerRef"
-  },
-  {
     "name": "REACTIVE_LVIEW_CONSUMER_NODE"
   },
   {
@@ -504,16 +498,10 @@
     "name": "VERSION"
   },
   {
-    "name": "VE_ViewContainerRef"
-  },
-  {
     "name": "VIEW_REFS"
   },
   {
     "name": "ViewEncapsulation"
-  },
-  {
-    "name": "ViewEngineTemplateRef"
   },
   {
     "name": "ViewRef"
@@ -567,9 +555,6 @@
     "name": "_keyMap"
   },
   {
-    "name": "_locateOrCreateAnchorNode"
-  },
-  {
     "name": "_locateOrCreateContainerAnchor"
   },
   {
@@ -607,9 +592,6 @@
   },
   {
     "name": "addPropertyAlias"
-  },
-  {
-    "name": "addToArray"
   },
   {
     "name": "addToViewTree"
@@ -711,16 +693,7 @@
     "name": "convertToBitFlags"
   },
   {
-    "name": "createAnchorNode"
-  },
-  {
-    "name": "createAndRenderEmbeddedLView"
-  },
-  {
     "name": "createContainerAnchorImpl"
-  },
-  {
-    "name": "createContainerRef"
   },
   {
     "name": "createDirectivesInstances"
@@ -733,9 +706,6 @@
   },
   {
     "name": "createInjector"
-  },
-  {
-    "name": "createLContainer"
   },
   {
     "name": "createLFrame"
@@ -751,9 +721,6 @@
   },
   {
     "name": "createTView"
-  },
-  {
-    "name": "createTemplateRef"
   },
   {
     "name": "currentConsumer"
@@ -829,9 +796,6 @@
   },
   {
     "name": "findAttrIndexInNode"
-  },
-  {
-    "name": "findMatchingDehydratedView"
   },
   {
     "name": "flattenUnsubscriptionErrors"
@@ -954,9 +918,6 @@
     "name": "getOrCreateTNode"
   },
   {
-    "name": "getOrCreateViewRefs"
-  },
-  {
     "name": "getOriginalError"
   },
   {
@@ -1005,16 +966,10 @@
     "name": "getTView"
   },
   {
-    "name": "getViewRefs"
-  },
-  {
     "name": "getVirtualInstructionIndex"
   },
   {
     "name": "hasInSkipHydrationBlockFlag"
-  },
-  {
-    "name": "hasParentInjector"
   },
   {
     "name": "hasTagAndTypeMatch"
@@ -2070,12 +2025,6 @@
     "name": "injectRootLimpMode"
   },
   {
-    "name": "injectTemplateRef"
-  },
-  {
-    "name": "injectViewContainerRef"
-  },
-  {
     "name": "injectableDefOrInjectorDefFactory"
   },
   {
@@ -2401,9 +2350,6 @@
   },
   {
     "name": "shimStylesContent"
-  },
-  {
-    "name": "shouldAddViewToDom"
   },
   {
     "name": "shouldSearchParent"

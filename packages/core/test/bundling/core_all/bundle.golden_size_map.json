@@ -104,7 +104,7 @@
           },
           "size": 4794
         },
-        "size": 236211,
+        "size": 236237,
         "src/": {
           "application_config.ts": 120,
           "application_init.ts": 598,
@@ -310,11 +310,11 @@
               "next_context.ts": 28,
               "projection.ts": 501,
               "property.ts": 173,
-              "property_create.ts": 1005,
+              "property_create.ts": 1021,
               "property_interpolation.ts": 1128,
               "render.ts": 591,
               "shared.ts": 8815,
-              "size": 29698,
+              "size": 29714,
               "storage.ts": 149,
               "style_map_interpolation.ts": 549,
               "style_prop_interpolation.ts": 738,
@@ -366,13 +366,13 @@
               "input.ts": 221,
               "input_signal.ts": 398,
               "output.ts": 41,
-              "queries.ts": 743,
+              "queries.ts": 753,
               "signal.ts": 245,
-              "size": 3490,
+              "size": 3500,
               "untracked.ts": 50
             },
             "scope.ts": 440,
-            "size": 125326,
+            "size": 125352,
             "state.ts": 3410,
             "styling/": {
               "class_differ.ts": 178,
@@ -410,7 +410,7 @@
             "size": 7033,
             "url_sanitizer.ts": 122
           },
-          "size": 217274,
+          "size": 217300,
           "testability/": {
             "size": 2831,
             "testability.ts": 2831
@@ -462,8 +462,8 @@
           "size": 17
         }
       },
-      "size": 236211
+      "size": 236237
     },
-    "size": 255908
+    "size": 255934
   }
 }

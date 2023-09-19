@@ -1851,9 +1851,6 @@
     "name": "provideZoneChangeDetection"
   },
   {
-    "name": "queryRefreshInternal"
-  },
-  {
     "name": "redirectIfUrlTree"
   },
   {
@@ -2152,6 +2149,9 @@
   },
   {
     "name": "ɵɵlistener"
+  },
+  {
+    "name": "ɵɵqueryRefresh"
   },
   {
     "name": "ɵɵsanitizeResourceUrl"

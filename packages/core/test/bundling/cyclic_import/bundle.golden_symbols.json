@@ -657,13 +657,7 @@
     "name": "deepForEachProvider"
   },
   {
-    "name": "destroyLView"
-  },
-  {
     "name": "detachMovedView"
-  },
-  {
-    "name": "detachView"
   },
   {
     "name": "detectChangesInChildComponents"
@@ -870,12 +864,6 @@
     "name": "getVirtualInstructionIndex"
   },
   {
-    "name": "hasInSkipHydrationBlockFlag"
-  },
-  {
-    "name": "hasParentInjector"
-  },
-  {
     "name": "hasTagAndTypeMatch"
   },
   {
@@ -1074,9 +1062,6 @@
     "name": "nativeInsertBefore"
   },
   {
-    "name": "nativeParentNode"
-  },
-  {
     "name": "nextNgElementId"
   },
   {
@@ -1255,9 +1240,6 @@
   },
   {
     "name": "unwrapRNode"
-  },
-  {
-    "name": "updateAncestorTraversalFlagsOnAttach"
   },
   {
     "name": "updateMicroTaskStatus"

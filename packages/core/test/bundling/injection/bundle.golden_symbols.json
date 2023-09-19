@@ -84,9 +84,6 @@
     "name": "_injectImplementation"
   },
   {
-    "name": "convertToBitFlags"
-  },
-  {
     "name": "createInjector"
   },
   {
@@ -103,9 +100,6 @@
   },
   {
     "name": "getClosureSafeProperty"
-  },
-  {
-    "name": "getComponentDef"
   },
   {
     "name": "getFactoryDef"
@@ -130,9 +124,6 @@
   },
   {
     "name": "injectInjectorOnly"
-  },
-  {
-    "name": "injectRootLimpMode"
   },
   {
     "name": "injectableDefOrInjectorDefFactory"
@@ -166,9 +157,6 @@
   },
   {
     "name": "stringify"
-  },
-  {
-    "name": "throwProviderNotFoundError"
   },
   {
     "name": "walkProviderTree"

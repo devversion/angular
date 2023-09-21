@@ -63,10 +63,6 @@ export class ViewRef<T> implements EmbeddedViewRef<T>, InternalViewRef, ChangeDe
     return this._lView[CONTEXT] as unknown as T;
   }
 
-  set context(value: T) {
-    this._lView[CONTEXT] = value as unknown as {};
-  }
-
   get destroyed(): boolean {
     return (this._lView[FLAGS] & LViewFlags.Destroyed) === LViewFlags.Destroyed;
   }

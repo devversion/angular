@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Directive, EmbeddedViewRef, Injector, Input, OnChanges, SimpleChanges, TemplateRef, ViewContainerRef} from '@angular/core';
+import {Directive, EmbeddedViewRef, Input, OnChanges, SimpleChange, SimpleChanges, TemplateRef, ViewContainerRef} from '@angular/core';
 
 /**
  * @ngModule CommonModule
@@ -32,12 +32,9 @@ import {Directive, EmbeddedViewRef, Injector, Input, OnChanges, SimpleChanges, T
  *
  * @publicApi
  */
-@Directive({
-  selector: '[ngTemplateOutlet]',
-  standalone: true,
-})
-export class NgTemplateOutlet<C = unknown> implements OnChanges {
-  private _viewRef: EmbeddedViewRef<C>|null = null;
+@Directive({selector: '[ngTemplateOutlet]'})
+export class NgTemplateOutlet implements OnChanges {
+  private _viewRef: EmbeddedViewRef<any>|null = null;
 
   /**
    * A context object to attach to the {@link EmbeddedViewRef}. This should be an
@@ -45,39 +42,26 @@ export class NgTemplateOutlet<C = unknown> implements OnChanges {
    * declarations.
    * Using the key `$implicit` in the context object will set its value as default.
    */
-  @Input() public ngTemplateOutletContext: C|null = null;
+  @Input() public ngTemplateOutletContext: Object|null = null;
 
   /**
    * A string defining the template reference and optionally the context object for the template.
    */
-  @Input() public ngTemplateOutlet: TemplateRef<C>|null = null;
-
-  /** Injector to be used within the embedded view. */
-  @Input() public ngTemplateOutletInjector: Injector|null = null;
+  @Input() public ngTemplateOutlet: TemplateRef<any>|null = null;
 
   constructor(private _viewContainerRef: ViewContainerRef) {}
 
-  /** @nodoc */
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['ngTemplateOutlet'] || changes['ngTemplateOutletInjector']) {
+    if (changes['ngTemplateOutlet']) {
       const viewContainerRef = this._viewContainerRef;
 
       if (this._viewRef) {
         viewContainerRef.remove(viewContainerRef.indexOf(this._viewRef));
       }
 
-      if (this.ngTemplateOutlet) {
-        const {
-          ngTemplateOutlet: template,
-          ngTemplateOutletContext: context,
-          ngTemplateOutletInjector: injector,
-        } = this;
-        this._viewRef =
-            viewContainerRef.createEmbeddedView(
-                template, context, injector ? {injector} : undefined) as EmbeddedViewRef<C>;
-      } else {
-        this._viewRef = null;
-      }
+      this._viewRef = this.ngTemplateOutlet ?
+          viewContainerRef.createEmbeddedView(this.ngTemplateOutlet, this.ngTemplateOutletContext) :
+          null;
     } else if (
         this._viewRef && changes['ngTemplateOutletContext'] && this.ngTemplateOutletContext) {
       this._viewRef.context = this.ngTemplateOutletContext;

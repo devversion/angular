@@ -6,7 +6,7 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {Directive, EmbeddedViewRef, Input, OnChanges, SimpleChange, SimpleChanges, TemplateRef, ViewContainerRef} from '@angular/core';
+import {Directive, EmbeddedViewRef, Injector, Input, OnChanges, SimpleChange, SimpleChanges, TemplateRef, ViewContainerRef} from '@angular/core';
 
 /**
  * @ngModule CommonModule
@@ -32,7 +32,10 @@ import {Directive, EmbeddedViewRef, Input, OnChanges, SimpleChange, SimpleChange
  *
  * @publicApi
  */
-@Directive({selector: '[ngTemplateOutlet]'})
+@Directive({
+  selector: '[ngTemplateOutlet]',
+  standalone: true,
+})
 export class NgTemplateOutlet implements OnChanges {
   private _viewRef: EmbeddedViewRef<any>|null = null;
 
@@ -49,59 +52,58 @@ export class NgTemplateOutlet implements OnChanges {
    */
   @Input() public ngTemplateOutlet: TemplateRef<any>|null = null;
 
+  /** Injector to be used within the embedded view. */
+  @Input() public ngTemplateOutletInjector: Injector|null = null;
+
   constructor(private _viewContainerRef: ViewContainerRef) {}
 
   ngOnChanges(changes: SimpleChanges) {
-    const recreateView = this._shouldRecreateView(changes);
-
-    if (recreateView) {
+    if (this._shouldRecreateView(changes)) {
       const viewContainerRef = this._viewContainerRef;
 
       if (this._viewRef) {
         viewContainerRef.remove(viewContainerRef.indexOf(this._viewRef));
       }
 
-      this._viewRef = this.ngTemplateOutlet ?
-          viewContainerRef.createEmbeddedView(this.ngTemplateOutlet, this.ngTemplateOutletContext) :
-          null;
-    } else if (this._viewRef && this.ngTemplateOutletContext) {
-      this._updateExistingContext(this.ngTemplateOutletContext);
+      // If there is no outlet, clear the destroyed view ref.
+      if (!this.ngTemplateOutlet) {
+        this._viewRef = null;
+        return;
+      }
+
+      // For a given outlet instance, we create a proxy object that delegates
+      // to the user-specified context. This allows changing, or swapping out
+      // the context object completely without having to destroy/re-create the view.
+      const proxyContext = new Proxy({}, {
+        get: (_target, prop, receiver) => {
+          if (!this.ngTemplateOutletContext) {
+            return undefined;
+          }
+          return Reflect.get(this.ngTemplateOutletContext, prop, receiver);
+        },
+      });
+
+      this._viewRef = viewContainerRef.createEmbeddedView(this.ngTemplateOutlet, proxyContext, {
+        injector: this.ngTemplateOutletInjector ?? undefined,
+      });
     }
   }
 
   /**
    * We need to re-create existing embedded view if:
    * - templateRef has changed
-   * - context has changes
+   * - context has changed (NOT TRUE ANYMORE)
+   * - the injector changed.
    *
-   * We mark context object as changed when the corresponding object
+   * We treat the context object as changed when the corresponding object
    * shape changes (new properties are added or existing properties are removed).
    * In other words we consider context with the same properties as "the same" even
    * if object reference changes (see https://github.com/angular/angular/issues/13407).
    */
   private _shouldRecreateView(changes: SimpleChanges): boolean {
-    const ctxChange = changes['ngTemplateOutletContext'];
-    return !!changes['ngTemplateOutlet'] || (ctxChange && this._hasContextShapeChanged(ctxChange));
-  }
+    const outletChange = changes['ngTemplateOutlet'];
+    const injectorChange = changes['ngTemplateOutletInjector'];
 
-  private _hasContextShapeChanged(ctxChange: SimpleChange): boolean {
-    const prevCtxKeys = Object.keys(ctxChange.previousValue || {});
-    const currCtxKeys = Object.keys(ctxChange.currentValue || {});
-
-    if (prevCtxKeys.length === currCtxKeys.length) {
-      for (let propName of currCtxKeys) {
-        if (prevCtxKeys.indexOf(propName) === -1) {
-          return true;
-        }
-      }
-      return false;
-    }
-    return true;
-  }
-
-  private _updateExistingContext(ctx: Object): void {
-    for (let propName of Object.keys(ctx)) {
-      (<any>this._viewRef!.context)[propName] = (<any>this.ngTemplateOutletContext)[propName];
-    }
+    return !!outletChange || !!injectorChange;
   }
 }

@@ -33,6 +33,7 @@ describe('NgTemplateOutlet', () => {
         TestComponent,
         CaptureTplRefs,
         DestroyableCmpt,
+        MultiContextComponent,
         InjectValueComponent,
       ],
       providers: [DestroyedSpyService]
@@ -146,22 +147,6 @@ describe('NgTemplateOutlet', () => {
     expect(spyService.destroyed).toBeFalsy();
   });
 
-  it('should recreate embedded view when context shape changes', () => {
-    const template =
-        `<ng-template let-foo="foo" #tpl><destroyable-cmpt></destroyable-cmpt>:{{foo}}</ng-template>` +
-        `<ng-template [ngTemplateOutlet]="tpl" [ngTemplateOutletContext]="context"></ng-template>`;
-
-    fixture = createTestComponent(template);
-    const spyService = fixture.debugElement.injector.get(DestroyedSpyService);
-
-    detectChangesAndExpectText('Content to destroy:bar');
-    expect(spyService.destroyed).toBeFalsy();
-
-    fixture.componentInstance.context = {foo: 'baz', other: true};
-    detectChangesAndExpectText('Content to destroy:baz');
-    expect(spyService.destroyed).toBeTruthy();
-  });
-
   it('should destroy embedded view when context value changes and templateRef becomes undefined', () => {
     const template =
         `<ng-template let-foo="foo" #tpl><destroyable-cmpt></destroyable-cmpt>:{{foo}}</ng-template>` +
@@ -245,6 +230,27 @@ describe('NgTemplateOutlet', () => {
          detectChangesAndExpectText('foo');
        }).not.toThrow();
      }));
+
+  it('should not mutate context object if two contexts with an identical shape are swapped', () => {
+    fixture = TestBed.createComponent(MultiContextComponent);
+    const {componentInstance, nativeElement} = fixture;
+    componentInstance.context1 = {name: 'one'};
+    componentInstance.context2 = {name: 'two'};
+    fixture.detectChanges();
+
+    expect(nativeElement.textContent.trim()).toBe('one | two');
+    expect(componentInstance.context1).toEqual({name: 'one'});
+    expect(componentInstance.context2).toEqual({name: 'two'});
+
+    const temp = componentInstance.context1;
+    componentInstance.context1 = componentInstance.context2;
+    componentInstance.context2 = temp;
+    fixture.detectChanges();
+
+    expect(nativeElement.textContent.trim()).toBe('two | one');
+    expect(componentInstance.context1).toEqual({name: 'two'});
+    expect(componentInstance.context2).toEqual({name: 'one'});
+  });
 
   it('should be able to specify an injector', waitForAsync(() => {
        const template = `<ng-template #tpl><inject-value></inject-value></ng-template>` +
@@ -332,6 +338,19 @@ class TestComponent {
 })
 class InjectValueComponent {
   constructor(@Inject(templateToken) public tokenValue: string) {}
+}
+
+@Component({
+  template: `
+  <ng-template #template let-name="name">{{name}}</ng-template>
+  <ng-template [ngTemplateOutlet]="template" [ngTemplateOutletContext]="context1"></ng-template>
+  |
+  <ng-template [ngTemplateOutlet]="template" [ngTemplateOutletContext]="context2"></ng-template>
+  `
+})
+class MultiContextComponent {
+  context1: {name: string}|undefined;
+  context2: {name: string}|undefined;
 }
 
 function createTestComponent(

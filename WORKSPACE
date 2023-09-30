@@ -85,10 +85,11 @@ yarn_install(
         "//tools/esm-interop:patches/npm/@bazel+esbuild+5.7.1.patch",
         "//tools/esm-interop:patches/npm/@bazel+protractor+5.7.1.patch",
         "//tools/esm-interop:patches/npm/rxjs+6.6.7.patch",
+        "//tools/esm-interop:patches/npm/@angular+build-tooling+0.0.0-76c632f6480810d48befe4743702eec9171fc763.patch",
     ],
     # Currently disabled due to:
     #  1. Missing Windows support currently.
-    #  2. Incompatibilites with the `ts_library` rule.
+    #  2. Incompatibilities with the `ts_library` rule.
     exports_directories_only = False,
     manual_build_file_contents = npm_package_archives(),
     package_json = "//:package.json",

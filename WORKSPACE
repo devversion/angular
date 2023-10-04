@@ -80,12 +80,11 @@ yarn_install(
         "//:.yarnrc",
         "//:tools/npm-patches/@bazel+jasmine+5.8.1.patch",
         "//tools:postinstall-patches.js",
-        "//tools/esm-interop:patches/npm/@angular+build-tooling+0.0.0-0109d498b0f6aae418ed4924a5e5c65695f0ac61.patch",
+        "//tools/esm-interop:patches/npm/@angular+build-tooling+0.0.0-680aab4562e5bb684518ca496cb449a6c447601d.patch",
         "//tools/esm-interop:patches/npm/@bazel+concatjs+5.8.1.patch",
         "//tools/esm-interop:patches/npm/@bazel+esbuild+5.7.1.patch",
         "//tools/esm-interop:patches/npm/@bazel+protractor+5.7.1.patch",
         "//tools/esm-interop:patches/npm/rxjs+6.6.7.patch",
-        "//tools/esm-interop:patches/npm/@angular+build-tooling+0.0.0-76c632f6480810d48befe4743702eec9171fc763.patch",
     ],
     # Currently disabled due to:
     #  1. Missing Windows support currently.

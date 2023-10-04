@@ -77,6 +77,7 @@ filegroup(
 
 generate_api_docs(
     name = "api_docs",
-    module_name = "@angular/router",
     srcs = [":files_for_docgen"],
+    entry_point = ":index.ts",
+    module_name = "@angular/router",
 )

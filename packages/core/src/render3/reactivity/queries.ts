@@ -6,14 +6,16 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
+import {consumerMarkDirty, producerAccessed, producerUpdateValueVersion, REACTIVE_NODE, ReactiveNode, SIGNAL} from '@angular/core/primitives/signals';
+
 import {ProviderToken} from '../../di/provider_token';
 import {QueryList} from '../../linker';
-import {REACTIVE_NODE, ReactiveNode, SIGNAL, Signal} from '../../signals';
-import {consumerMarkDirty, producerAccessed, producerUpdateValueVersion} from '../../signals/src/graph';
 import {QueryFlags} from '../interfaces/query';
 import {LView} from '../interfaces/view';
 import {createContentQueryInternal, createViewQueryInternal, loadQueryInternal, queryRefreshInternal} from '../query';
 import {getLView} from '../state';
+
+import {Signal} from './api';
 
 export interface QuerySignalNode<T> extends ReactiveNode {
   _lView?: LView;

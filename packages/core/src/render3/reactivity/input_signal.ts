@@ -22,7 +22,7 @@ export const BRAND_WRITE_TYPE = /* @__PURE__ */ Symbol();
  */
 export type InputSignal<ReadT, WriteT> = Signal<ReadT>&{
   [BRAND_WRITE_TYPE]: WriteT;
-}
+};
 
 // TODO(signals)
 export type ɵɵGetInputSignalWriteType<T> = T extends InputSignal<any, infer X>? X : never;

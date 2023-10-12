@@ -65,7 +65,7 @@ function processUnit(unit: CompilationUnit): void {
           }
 
           const shallowExpr = new ir.ShallowReferenceExpr(expr.target, expr.offset);
-          shallowExpr.slot = expr.slot;
+          shallowExpr.targetSlot = expr.targetSlot;
           return shallowExpr;
         }, ir.VisitorContextFlag.None);
 

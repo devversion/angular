@@ -104,6 +104,14 @@ export function angularCoreDts(): TestFile {
     }
 
     export declare type NgIterable<T> = Array<T> | Iterable<T>;
+
+    export declare const ɵINPUT_SIGNAL_BRAND_READ_TYPE: unique symbol;
+    export declare const ɵINPUT_SIGNAL_BRAND_WRITE_TYPE: unique symbol;
+
+    export declare type InputSignal<ReadT, WriteT = ReadT> = (() => ReadT)&{
+      [ɵINPUT_SIGNAL_BRAND_READ_TYPE]: ReadT;
+      [ɵINPUT_SIGNAL_BRAND_WRITE_TYPE]: WriteT;
+    };
    `
   };
 }

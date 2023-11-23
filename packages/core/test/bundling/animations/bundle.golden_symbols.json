@@ -492,6 +492,9 @@
     "name": "SHARED_ANIMATION_PROVIDERS"
   },
   {
+    "name": "SIGNAL"
+  },
+  {
     "name": "SIMPLE_CHANGES_STORE"
   },
   {

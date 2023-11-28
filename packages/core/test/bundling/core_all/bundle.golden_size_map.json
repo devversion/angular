@@ -1,5 +1,5 @@
 {
-  "unmapped": 1338,
+  "unmapped": 1330,
   "files": {
     "node_modules/": {
       "rxjs/": {
@@ -104,7 +104,7 @@
           },
           "size": 4959
         },
-        "size": 235477,
+        "size": 235919,
         "src/": {
           "application_config.ts": 120,
           "application_init.ts": 600,
@@ -250,11 +250,12 @@
           },
           "render3/": {
             "after_render_hooks.ts": 2239,
+            "apply_value_input_field.ts": 105,
             "assert.ts": 298,
             "bindings.ts": 304,
             "collect_native_nodes.ts": 449,
             "component.ts": 462,
-            "component_ref.ts": 3719,
+            "component_ref.ts": 3741,
             "context_discovery.ts": 2209,
             "debug/": {
               "framework_injector_profiler.ts": 1885,
@@ -262,7 +263,7 @@
               "set_debug_info.ts": 54,
               "size": 2135
             },
-            "definition.ts": 2576,
+            "definition.ts": 2617,
             "definition_factory.ts": 56,
             "deps_tracker/": {
               "deps_tracker.ts": 3497,
@@ -276,9 +277,9 @@
               "host_directives_feature.ts": 663,
               "inherit_definition_feature.ts": 1320,
               "input_transforms_feature.ts": 146,
-              "ng_onchanges_feature.ts": 542,
+              "ng_onchanges_feature.ts": 549,
               "providers_feature.ts": 74,
-              "size": 3662,
+              "size": 3669,
               "standalone_feature.ts": 648
             },
             "fields.ts": 167,
@@ -318,8 +319,8 @@
               "property.ts": 152,
               "property_interpolation.ts": 1101,
               "render.ts": 608,
-              "shared.ts": 8735,
-              "size": 29362,
+              "shared.ts": 8800,
+              "size": 29427,
               "storage.ts": 114,
               "style_map_interpolation.ts": 549,
               "style_prop_interpolation.ts": 738,
@@ -331,12 +332,13 @@
             "interfaces/": {
               "container.ts": 196,
               "context.ts": 116,
+              "definition.ts": 85,
               "document.ts": 121,
               "i18n.ts": 158,
               "injector.ts": 153,
               "lview_tracking.ts": 116,
               "node.ts": 223,
-              "size": 1779,
+              "size": 1864,
               "styling.ts": 286,
               "type_checks.ts": 410
             },
@@ -373,7 +375,7 @@
               "untracked.ts": 58
             },
             "scope.ts": 440,
-            "size": 124279,
+            "size": 124721,
             "state.ts": 3262,
             "styling/": {
               "class_differ.ts": 180,
@@ -386,12 +388,12 @@
             "util/": {
               "attrs_utils.ts": 982,
               "change_detection_utils.ts": 69,
-              "discovery_utils.ts": 2091,
+              "discovery_utils.ts": 2208,
               "global_utils.ts": 563,
               "injector_discovery_utils.ts": 3056,
               "injector_utils.ts": 146,
               "misc_utils.ts": 243,
-              "size": 8722,
+              "size": 8839,
               "stringify_utils.ts": 216,
               "view_traversal_utils.ts": 262,
               "view_utils.ts": 1094
@@ -411,7 +413,7 @@
             "size": 7073,
             "url_sanitizer.ts": 122
           },
-          "size": 216555,
+          "size": 216997,
           "testability/": {
             "size": 2833,
             "testability.ts": 2833
@@ -464,8 +466,8 @@
           "size": 17
         }
       },
-      "size": 235477
+      "size": 235919
     },
-    "size": 255170
+    "size": 255612
   }
 }

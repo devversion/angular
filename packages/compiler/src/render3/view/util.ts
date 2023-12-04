@@ -210,15 +210,16 @@ export function conditionallyCreateDirectiveBindingLiteral(
       const hasTransform = value.transformFunction !== null;
 
       // Build up input flags
-      let flags = 0;
+      let flags: o.Expression|null = null;
       if (value.isSignal) {
-        flags = flags | InputFlags.SignalBased;
+        flags = o.importExpr(R3.InputFlags).prop(InputFlags[InputFlags.SignalBased]);
       }
 
       // Inputs, compared to outputs, will track their declared name (for `ngOnChanges`), or support
       // transform functions, or store flag information if there is any.
-      if (forInputs && (differentDeclaringName || hasTransform || flags !== 0)) {
-        const result: o.Expression[] = [o.literal(flags), asLiteral(publicName)];
+      if (forInputs && (differentDeclaringName || hasTransform || flags !== null)) {
+        const flagsExpr = flags ?? o.importExpr(R3.InputFlags).prop(InputFlags[InputFlags.None]);
+        const result: o.Expression[] = [flagsExpr, asLiteral(publicName)];
 
         if (differentDeclaringName || hasTransform) {
           result.push(asLiteral(declaredName));

@@ -34,6 +34,7 @@ export interface Input {
   alias?: string;
   required?: boolean;
   transform?: (value: any) => any;
+  ɵisSignal?: boolean;
 }
 
 /** Flags describing an input for a directive. */

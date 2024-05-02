@@ -450,8 +450,9 @@ export class NgCompiler {
     private livePerfRecorder: ActivePerfRecorder,
   ) {
     this.delegatingPerfRecorder = new DelegatingPerfRecorder(this.perfRecorder);
+    this.usePoisonedData = usePoisonedData || !!options._usePoisonedData;
     this.enableTemplateTypeChecker =
-      enableTemplateTypeChecker || (options['_enableTemplateTypeChecker'] ?? false);
+      enableTemplateTypeChecker || !!options._enableTemplateTypeChecker;
     // TODO(crisbeto): remove this flag and base `enableBlockSyntax` on the `angularCoreVersion`.
     this.enableBlockSyntax = options['_enableBlockSyntax'] ?? true;
     this.angularCoreVersion = options['_angularCoreVersion'] ?? null;

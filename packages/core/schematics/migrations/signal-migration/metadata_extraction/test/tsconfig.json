@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node10",
+    "strict": true,
+    "skipLibCheck": true
+  },
+  "angularCompilerOptions": {
+    "strictTemplates": true
+  },
+  "files": ["index.ts", "index_spec.ts"]
+}

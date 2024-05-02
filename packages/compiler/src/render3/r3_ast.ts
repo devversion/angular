@@ -625,6 +625,7 @@ export class RecursiveVisitor implements Visitor<void> {
   }
   visitTemplate(template: Template): void {
     visitAll(this, template.attributes);
+    visitAll(this, template.templateAttrs);
     visitAll(this, template.inputs);
     visitAll(this, template.outputs);
     visitAll(this, template.children);

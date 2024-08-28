@@ -9,7 +9,7 @@
 import {TsurgeMigration} from '../migration';
 import {Serializable} from '../helpers/serializable';
 import ts from 'typescript';
-import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
 
 /**
  * Executes the analyze phase of the given migration against

@@ -7,7 +7,7 @@
  */
 
 import ts from 'typescript';
-import {NgtscProgram} from '../../../../compiler-cli/src/ngtsc/program';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
 import {TsurgeBaseMigration} from './base_migration';
 import {Serializable} from './helpers/serializable';
 import {ProgramInfo} from './program_info';

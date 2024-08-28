@@ -6,8 +6,8 @@
  * found in the LICENSE file at https://angular.io/license
  */
 
-import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
-import {FileSystem} from '../../../../../compiler-cli/src/ngtsc/file_system';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
+import {FileSystem} from '@angular/compiler-cli/src/ngtsc/file_system';
 import {confirmAsSerializable, Serializable} from '../../../utils/tsurge/helpers/serializable';
 import {BaseProgramInfo, ProgramInfo} from '../../../utils/tsurge/program_info';
 import {TsurgeComplexMigration} from '../../../utils/tsurge/migration';

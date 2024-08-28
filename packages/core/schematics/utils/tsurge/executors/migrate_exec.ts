@@ -8,7 +8,7 @@
 
 import {TsurgeMigration} from '../migration';
 import {Replacement} from '../replacement';
-import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
 import ts from 'typescript';
 
 /**

@@ -10,11 +10,11 @@ import path from 'path';
 import {UniqueID} from '../helpers/unique_id';
 import ts from 'typescript';
 import {ProgramInfo} from '../program_info';
-import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
-import {DtsMetadataReader} from '../../../../../compiler-cli/src/ngtsc/metadata';
-import {ClassDeclaration, ReflectionHost} from '../../../../../compiler-cli/src/ngtsc/reflection';
-import {Reference} from '../../../../../compiler-cli/src/ngtsc/imports';
-import {getAngularDecorators} from '../../../../../compiler-cli/src/ngtsc/annotations';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
+import {DtsMetadataReader} from '@angular/compiler-cli/src/ngtsc/metadata';
+import {ClassDeclaration, ReflectionHost} from '@angular/compiler-cli/src/ngtsc/reflection';
+import {Reference} from '@angular/compiler-cli/src/ngtsc/imports';
+import {getAngularDecorators} from '@angular/compiler-cli/src/ngtsc/annotations';
 
 export type OutputID = UniqueID<'output-node'>;
 

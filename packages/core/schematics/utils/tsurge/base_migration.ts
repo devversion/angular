@@ -9,9 +9,9 @@
 import assert from 'assert';
 import path from 'path';
 import ts from 'typescript';
-import {FileSystem} from '../../../../compiler-cli/src/ngtsc/file_system';
-import {NgtscProgram} from '../../../../compiler-cli/src/ngtsc/program';
-import {isShim} from '../../../../compiler-cli/src/ngtsc/shims';
+import {FileSystem} from '@angular/compiler-cli/src/ngtsc/file_system';
+import {NgtscProgram} from '@angular/compiler-cli/src/ngtsc/program';
+import {isShim} from '@angular/compiler-cli/src/ngtsc/shims';
 import {createNgtscProgram} from './helpers/ngtsc_program';
 import {BaseProgramInfo, ProgramInfo} from './program_info';
 

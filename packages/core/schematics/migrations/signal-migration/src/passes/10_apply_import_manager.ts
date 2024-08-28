@@ -7,12 +7,9 @@
  */
 
 import ts from 'typescript';
-import {ImportManager} from '../../../../../../compiler-cli/src/ngtsc/translator';
+import {ImportManager} from '@angular/compiler-cli/src/ngtsc/translator';
 import {MigrationResult} from '../result';
-import {
-  absoluteFrom,
-  absoluteFromSourceFile,
-} from '../../../../../../compiler-cli/src/ngtsc/file_system';
+import {absoluteFrom, absoluteFromSourceFile} from '@angular/compiler-cli/src/ngtsc/file_system';
 import {Replacement, TextUpdate} from '../../../../utils/tsurge/replacement';
 
 /**

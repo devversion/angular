@@ -11,6 +11,7 @@ ts_library(
     ],
     visibility = [
         ":__subpackages__",
+        "//packages/compiler-cli/src/ngtsc/transform/isolated-dts/test:__pkg__",
         "//packages/compiler-cli/src/ngtsc/transform/jit/test:__pkg__",
         "//packages/language-service/test:__subpackages__",
     ],

@@ -1,0 +1,23 @@
+load("//tools:defaults.bzl", "jasmine_node_test", "ts_library")
+
+ts_library(
+    name = "test_lib",
+    testonly = True,
+    srcs = glob(["*.ts"]),
+    deps = [
+        "//packages/compiler-cli/src/ngtsc/imports",
+        "//packages/compiler-cli/src/ngtsc/partial_evaluator",
+        "//packages/compiler-cli/src/ngtsc/reflection",
+        "//packages/compiler-cli/src/ngtsc/transform/isolated-dts",
+        "//packages/compiler-cli/test:test_utils",
+        "@npm//typescript",
+    ],
+)
+
+jasmine_node_test(
+    name = "test",
+    bootstrap = ["//tools/testing:node"],
+    deps = [
+        ":test_lib",
+    ],
+)

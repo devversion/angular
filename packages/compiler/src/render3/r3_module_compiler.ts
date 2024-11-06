@@ -289,7 +289,20 @@ export function compileNgModuleDeclarationExpression(meta: R3DeclareNgModuleFaca
   return o.importExpr(R3.defineNgModule).callFn([definitionMap.toLiteralMap()]);
 }
 
-export function createNgModuleType(meta: R3NgModuleMetadata): o.ExpressionType {
+type NgModuleMetadataForDtsEmit = Pick<
+  R3NgModuleMetadataGlobal,
+  | 'kind'
+  | 'type'
+  | 'declarations'
+  | 'exports'
+  | 'imports'
+  | 'includeImportTypes'
+  | 'publicDeclarationTypes'
+>;
+
+export function createNgModuleType(
+  meta: NgModuleMetadataForDtsEmit | R3NgModuleMetadataLocal,
+): o.ExpressionType {
   if (meta.kind === R3NgModuleMetadataKind.Local) {
     return new o.ExpressionType(meta.type.value);
   }

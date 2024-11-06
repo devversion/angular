@@ -1,0 +1,19 @@
+load("//tools:defaults.bzl", "ts_library")
+
+package(default_visibility = ["//visibility:public"])
+
+ts_library(
+    name = "isolated-dts",
+    srcs = glob(["**/*.ts"]),
+    deps = [
+        "//packages/compiler",
+        "//packages/compiler-cli/src/ngtsc/annotations",
+        "//packages/compiler-cli/src/ngtsc/annotations/common",
+        "//packages/compiler-cli/src/ngtsc/annotations/ng_module",
+        "//packages/compiler-cli/src/ngtsc/core:api",
+        "//packages/compiler-cli/src/ngtsc/imports",
+        "//packages/compiler-cli/src/ngtsc/partial_evaluator",
+        "//packages/compiler-cli/src/ngtsc/reflection",
+        "@npm//typescript",
+    ],
+)

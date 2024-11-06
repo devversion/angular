@@ -360,7 +360,8 @@ export class NgModuleDecoratorHandler
     const rawDeclarations: ts.Expression | null = ngModule.get('declarations') ?? null;
     if (rawDeclarations !== null) {
       const declarationMeta = this.evaluator.evaluate(rawDeclarations, forwardRefResolver);
-      declarationRefs = this.resolveTypeList(
+      declarationRefs = resolveTypeList(
+        this.reflector,
         rawDeclarations,
         declarationMeta,
         name,
@@ -396,7 +397,8 @@ export class NgModuleDecoratorHandler
     if (rawImports !== null) {
       const importsMeta = this.evaluator.evaluate(rawImports, moduleResolvers);
 
-      const result = this.resolveTypeList(
+      const result = resolveTypeList(
+        this.reflector,
         rawImports,
         importsMeta,
         name,
@@ -431,7 +433,8 @@ export class NgModuleDecoratorHandler
     const rawExports: ts.Expression | null = ngModule.get('exports') ?? null;
     if (rawExports !== null) {
       const exportsMeta = this.evaluator.evaluate(rawExports, moduleResolvers);
-      exportRefs = this.resolveTypeList(
+      exportRefs = resolveTypeList(
+        this.reflector,
         rawExports,
         exportsMeta,
         name,
@@ -447,7 +450,8 @@ export class NgModuleDecoratorHandler
     const rawBootstrap: ts.Expression | null = ngModule.get('bootstrap') ?? null;
     if (this.compilationMode !== CompilationMode.LOCAL && rawBootstrap !== null) {
       const bootstrapMeta = this.evaluator.evaluate(rawBootstrap, forwardRefResolver);
-      bootstrapRefs = this.resolveTypeList(
+      bootstrapRefs = resolveTypeList(
+        this.reflector,
         rawBootstrap,
         bootstrapMeta,
         name,
@@ -608,7 +612,8 @@ export class NgModuleDecoratorHandler
       for (const importExpr of topLevelExpressions) {
         const resolved = this.evaluator.evaluate(importExpr, moduleResolvers);
 
-        const {references, hasModuleWithProviders} = this.resolveTypeList(
+        const {references, hasModuleWithProviders} = resolveTypeList(
+          this.reflector,
           importExpr,
           [resolved],
           node.name.text,
@@ -1069,106 +1074,6 @@ export class NgModuleDecoratorHandler
       return toR3Reference(origin, valueRef, valueContext, this.refEmitter);
     }
   }
-
-  // Verify that a "Declaration" reference is a `ClassDeclaration` reference.
-  private isClassDeclarationReference(ref: Reference): ref is Reference<ClassDeclaration> {
-    return this.reflector.isClass(ref.node);
-  }
-
-  /**
-   * Compute a list of `Reference`s from a resolved metadata value.
-   */
-  private resolveTypeList(
-    expr: ts.Node,
-    resolvedList: ResolvedValue,
-    className: string,
-    arrayName: string,
-    absoluteIndex: number,
-    allowUnresolvedReferences: boolean,
-  ): {
-    references: Reference<ClassDeclaration>[];
-    hasModuleWithProviders: boolean;
-    dynamicValues: DynamicValue[];
-  } {
-    let hasModuleWithProviders = false;
-    const refList: Reference<ClassDeclaration>[] = [];
-    const dynamicValueSet = new Set<DynamicValue>();
-
-    if (!Array.isArray(resolvedList)) {
-      if (allowUnresolvedReferences) {
-        return {
-          references: [],
-          hasModuleWithProviders: false,
-          dynamicValues: [],
-        };
-      }
-
-      throw createValueHasWrongTypeError(
-        expr,
-        resolvedList,
-        `Expected array when reading the NgModule.${arrayName} of ${className}`,
-      );
-    }
-
-    for (let idx = 0; idx < resolvedList.length; idx++) {
-      let entry = resolvedList[idx];
-      // Unwrap ModuleWithProviders for modules that are locally declared (and thus static
-      // resolution was able to descend into the function and return an object literal, a Map).
-      if (entry instanceof SyntheticValue && isResolvedModuleWithProviders(entry)) {
-        entry = entry.value.ngModule;
-        hasModuleWithProviders = true;
-      } else if (entry instanceof Map && entry.has('ngModule')) {
-        entry = entry.get('ngModule')!;
-        hasModuleWithProviders = true;
-      }
-
-      if (Array.isArray(entry)) {
-        // Recurse into nested arrays.
-        const recursiveResult = this.resolveTypeList(
-          expr,
-          entry,
-          className,
-          arrayName,
-          absoluteIndex,
-          allowUnresolvedReferences,
-        );
-        refList.push(...recursiveResult.references);
-
-        for (const d of recursiveResult.dynamicValues) {
-          dynamicValueSet.add(d);
-        }
-
-        absoluteIndex += recursiveResult.references.length;
-        hasModuleWithProviders = hasModuleWithProviders || recursiveResult.hasModuleWithProviders;
-      } else if (entry instanceof Reference) {
-        if (!this.isClassDeclarationReference(entry)) {
-          throw createValueHasWrongTypeError(
-            entry.node,
-            entry,
-            `Value at position ${absoluteIndex} in the NgModule.${arrayName} of ${className} is not a class`,
-          );
-        }
-        refList.push(entry);
-        absoluteIndex += 1;
-      } else if (entry instanceof DynamicValue && allowUnresolvedReferences) {
-        dynamicValueSet.add(entry);
-        continue;
-      } else {
-        // TODO(alxhub): Produce a better diagnostic here - the array index may be an inner array.
-        throw createValueHasWrongTypeError(
-          expr,
-          entry,
-          `Value at position ${absoluteIndex} in the NgModule.${arrayName} of ${className} is not a reference`,
-        );
-      }
-    }
-
-    return {
-      references: refList,
-      hasModuleWithProviders,
-      dynamicValues: [...dynamicValueSet],
-    };
-  }
 }
 
 function isNgModule(node: ClassDeclaration, compilation: ScopeData): boolean {
@@ -1222,4 +1127,109 @@ function makeStandaloneBootstrapDiagnostic(
 
 function isSyntheticReference(ref: Reference<DeclarationNode>): boolean {
   return ref.synthetic;
+}
+
+/**
+ * Compute a list of `Reference`s from a resolved metadata value.
+ */
+export function resolveTypeList(
+  reflector: ReflectionHost,
+  expr: ts.Node,
+  resolvedList: ResolvedValue,
+  className: string,
+  arrayName: string,
+  absoluteIndex: number,
+  allowUnresolvedReferences: boolean,
+): {
+  references: Reference<ClassDeclaration>[];
+  hasModuleWithProviders: boolean;
+  dynamicValues: DynamicValue[];
+} {
+  let hasModuleWithProviders = false;
+  const refList: Reference<ClassDeclaration>[] = [];
+  const dynamicValueSet = new Set<DynamicValue>();
+
+  if (!Array.isArray(resolvedList)) {
+    if (allowUnresolvedReferences) {
+      return {
+        references: [],
+        hasModuleWithProviders: false,
+        dynamicValues: [],
+      };
+    }
+
+    throw createValueHasWrongTypeError(
+      expr,
+      resolvedList,
+      `Expected array when reading the NgModule. ${arrayName} of ${className}`,
+    );
+  }
+
+  for (let idx = 0; idx < resolvedList.length; idx++) {
+    let entry = resolvedList[idx];
+    // Unwrap ModuleWithProviders for modules that are locally declared (and thus static
+    // resolution was able to descend into the function and return an object literal, a Map).
+    if (entry instanceof SyntheticValue && isResolvedModuleWithProviders(entry)) {
+      entry = entry.value.ngModule;
+      hasModuleWithProviders = true;
+    } else if (entry instanceof Map && entry.has('ngModule')) {
+      entry = entry.get('ngModule')!;
+      hasModuleWithProviders = true;
+    }
+
+    if (Array.isArray(entry)) {
+      // Recurse into nested arrays.
+      const recursiveResult = resolveTypeList(
+        reflector,
+        expr,
+        entry,
+        className,
+        arrayName,
+        absoluteIndex,
+        allowUnresolvedReferences,
+      );
+      refList.push(...recursiveResult.references);
+
+      for (const d of recursiveResult.dynamicValues) {
+        dynamicValueSet.add(d);
+      }
+
+      absoluteIndex += recursiveResult.references.length;
+      hasModuleWithProviders = hasModuleWithProviders || recursiveResult.hasModuleWithProviders;
+    } else if (entry instanceof Reference) {
+      if (!isClassDeclarationReference(reflector, entry)) {
+        throw createValueHasWrongTypeError(
+          entry.node,
+          entry,
+          `Value at position ${absoluteIndex} in the NgModule. ${arrayName} of ${className} is not a class`,
+        );
+      }
+      refList.push(entry);
+      absoluteIndex += 1;
+    } else if (entry instanceof DynamicValue && allowUnresolvedReferences) {
+      dynamicValueSet.add(entry);
+      continue;
+    } else {
+      console.error(allowUnresolvedReferences, entry);
+      // TODO(alxhub): Produce a better diagnostic here - the array index may be an inner array.
+      throw createValueHasWrongTypeError(
+        expr,
+        entry,
+        `Value at position ${absoluteIndex} in the NgModule. ${arrayName} of ${className} is not a reference`,
+      );
+    }
+  }
+
+  return {
+    references: refList,
+    hasModuleWithProviders,
+    dynamicValues: [...dynamicValueSet],
+  };
+}
+// Verify that a "Declaration" reference is a `ClassDeclaration` reference.
+function isClassDeclarationReference(
+  reflector: ReflectionHost,
+  ref: Reference,
+): ref is Reference<ClassDeclaration> {
+  return reflector.isClass(ref.node);
 }

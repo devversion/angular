@@ -166,7 +166,7 @@ export class DynamicValue<R = unknown> {
     return this.code === DynamicValueReason.UNSUPPORTED_SYNTAX;
   }
 
-  isFromUnknownIdentifier(this: DynamicValue<R>): this is DynamicValue {
+  isFromUnknownIdentifier(this: DynamicValue<R>) {
     return this.code === DynamicValueReason.UNKNOWN_IDENTIFIER;
   }
 

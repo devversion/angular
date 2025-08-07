@@ -167,6 +167,22 @@
       ]
     },
     {
+      "description": "should generate an @else if block with an aliased expression",
+      "inputFiles": ["if_else_with_alias.ts"],
+      "focusTest": true,
+      "expectations": [
+        {
+          "files": [
+            {
+              "expected": "if_else_with_alias_template.js",
+              "generated": "if_else_with_alias.js"
+            }
+          ],
+          "failureMessage": "Incorrect template"
+        }
+      ]
+    },
+    {
       "description": "should expose the alias to nested conditional blocks",
       "inputFiles": ["if_nested_alias.ts"],
       "expectations": [

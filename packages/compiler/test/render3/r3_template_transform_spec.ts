@@ -2432,12 +2432,12 @@ describe('R3 template transform', () => {
         ).toThrowError(/Unrecognized block @else\nif/);
       });
 
-      it('should report an else if block that has an `as` expression', () => {
+      it('should support an else if block that has an `as` expression', () => {
         expect(() =>
           parse(`
           @if (foo) {hello} @else if (bar; as alias) {goodbye}
         `),
-        ).toThrowError(/"as" expression is only allowed on the primary @if block/);
+        ).not.toThrow();
       });
 
       it('should report an @else if block used without an @if block', () => {
